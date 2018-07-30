@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Threading;
 
 namespace Serial
 {
@@ -16,10 +17,19 @@ namespace Serial
         bool isOpen;
         string connectedCom;
         int connectedBaudRate;
+        private static Queue<Record> recordsQueue;
+        private static System.Windows.Forms.Timer timer;
 
         public Form1()
         {
             InitializeComponent();
+            DataManager.Instance.Connect();
+            recordsQueue = new Queue<Record>();
+            timer = new System.Windows.Forms.Timer
+            {
+                Interval = 60000
+            };
+            timer.Tick += WriteDataTask;
             this.btn_Open.Enabled = false;
             this.isOpen = false;
             ComSet(false);
@@ -63,6 +73,9 @@ namespace Serial
         {
             string receivedText = ComManager.Instance.ReceiveData();
             AppendText(receivedText.ToString());
+            Record record = new Record();
+            record.Intput(receivedText);
+            recordsQueue.Enqueue(record);
         }
 
         private void ComSet(bool open, string portName = "", int baudRate = 0)
@@ -74,6 +87,7 @@ namespace Serial
                 this.btn_Open.BackgroundImage = Properties.Resources.exit;
                 this.connectedCom = portName;
                 this.connectedBaudRate = baudRate;
+                timer.Start();
             }
             else
             {
@@ -82,6 +96,8 @@ namespace Serial
                 this.btn_Open.BackgroundImage = Properties.Resources.play;
                 this.connectedCom = "";
                 this.connectedBaudRate = 0;
+                timer.Stop();
+                WriteDataTask(null, null);
             }
             this.isOpen = open;
             txt_Status.Text = String.Format("Port: {0}     Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
@@ -90,6 +106,41 @@ namespace Serial
         private void Open_Click(object sender, EventArgs e)
         {
             ComSet(!this.isOpen, this.combo_ComList.SelectedItem.ToString(), 9600);
+        }
+
+        private void Button2_Click(object sender, EventArgs e)
+        {
+            Record record = new Record();
+            record.Intput("b:1,d:1,t:30.21,h:76.25");
+            recordsQueue.Enqueue(record);
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            dataGridView1.AutoGenerateColumns = true;
+            
+            dataGridView1.DataSource = DataManager.Instance.GetDataSource().Tables[0].DefaultView;
+            //// Automatically resize the visible rows.
+            //dataGridView1.AutoSizeRowsMode =
+            //    DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
+        }
+
+        private void WriteDataTask(object sender, EventArgs e)
+        {
+            if (recordsQueue.Count <= 0)
+            {
+                return;
+            }
+            try
+            {
+                for (; ; )
+                {
+                    recordsQueue.Dequeue().UnsafeSave();
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }

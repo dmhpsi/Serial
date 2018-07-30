@@ -95,7 +95,7 @@ namespace Serial.Properties {
         /// </summary>
         internal static System.Drawing.Bitmap send {
             get {
-                object obj = ResourceManager.GetObject("btn_Send", resourceCulture);
+                object obj = ResourceManager.GetObject("send", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Serial
 {
@@ -17,130 +13,500 @@ namespace Serial
         bool isOpen;
         string connectedCom;
         int connectedBaudRate;
-        private static Queue<Record> recordsQueue;
+        private static List<Record> recordsList, recordsListClone;
         private static System.Windows.Forms.Timer timer;
+        private int page, pageSize;
+        private string currBoardId, currDevId;
+        private ToolTip toolTip;
+        private double MinX, MaxX, MinY, MaxY, MinY2, MaxY2;
+        private List<Chart> chartsList;
 
         public Form1()
         {
             InitializeComponent();
             DataManager.Instance.Connect();
-            recordsQueue = new Queue<Record>();
+            recordsList = new List<Record>();
             timer = new System.Windows.Forms.Timer
             {
-                Interval = 60000
+                Interval = Constants.saveInterval * 1000
             };
             timer.Tick += WriteDataTask;
-            this.btn_Open.Enabled = false;
+            this.BtnOpen.Enabled = false;
             this.isOpen = false;
+            BtnLastPage.Enabled = false;
+            BtnFirstPage.Enabled = false;
+            BtnPreviousPage.Enabled = false;
+            BtnNextPage.Enabled = false;
+            toolTip = new ToolTip
+            {
+                InitialDelay = 500,
+                ReshowDelay = 500,
+                ShowAlways = true
+            };
+            toolTip.SetToolTip(BtnFirstPage, "First Page");
+            toolTip.SetToolTip(BtnGetBoardsList, "Get Boards List");
+            toolTip.SetToolTip(BtnGetDevidsList, "Get Devices List");
+            toolTip.SetToolTip(BtnLastPage, "Last Page");
+            toolTip.SetToolTip(BtnNextPage, "Next Page");
+            toolTip.SetToolTip(BtnPreviousPage, "Previous Page");
+            toolTip.SetToolTip(BtnReadDb, "Read The DataBase");
+            toolTip.SetToolTip(BtnRefresh, "Get COMs list");
             ComSet(false);
+
+            this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            this.chart1.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
+            this.chart1.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
+            this.chart2.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            this.chart2.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
+            this.chart2.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
+            this.chart3.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            this.chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
+            this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
         }
 
         private void RefreshClick(object sender, EventArgs e)
         {
-            this.btn_Open.Enabled = false;
-            string [] ports = SerialPort.GetPortNames();
-            this.combo_ComList.Items.Clear();
-            this.combo_ComList.Items.AddRange(ports);
-            this.combo_ComList.Refresh();
-            if (this.combo_ComList.Items.Count > 0)
+            this.BtnOpen.Enabled = false;
+            string[] ports = SerialPort.GetPortNames();
+            this.ComboComList.Items.Clear();
+            this.ComboComList.Items.AddRange(ports);
+            this.ComboComList.Refresh();
+            if (this.ComboComList.Items.Count > 0)
             {
-                this.combo_ComList.SelectedIndex = 0;
-                this.btn_Open.Enabled = true;
+                this.ComboComList.SelectedIndex = 0;
+                this.BtnOpen.Enabled = true;
             }
             ComSet(false);
         }
 
-        delegate void AppendTextCallback(string text);
-
-        private void AppendText(string text)
+        private double Floor(double x, double spacing)
         {
-            if (this.txt_Console.InvokeRequired)
+            return (Math.Floor(x / spacing) * spacing);
+        }
+        private double Ceiling(double x, double spacing)
+        {
+            return (Math.Ceiling(x / spacing) * spacing);
+        }
+        private double Round(double x, double spacing)
+        {
+            return (Math.Round(x / spacing) * spacing);
+        }
+        private void ClearMinMax()
+        {
+            MinX = 9999.0;
+            MinY = 9999.0;
+            MinY2 = 9999.0;
+            MaxX = -9999.0;
+            MaxY = -9999.0;
+            MaxY2 = -9999.0;
+            chartsList = new List<Chart>();
+        }
+        private void FindMinMax(DataPointCollection collection,
+            out double minX, out double maxX,
+            out double minY, out double maxY)
+        {
+            minX = 9999.0;
+            maxX = -9999.0;
+            minY = 9999.0;
+            maxY = -9999.0;
+            foreach (DataPoint data in collection)
             {
-                AppendTextCallback d = new AppendTextCallback(AppendText);
-                this.Invoke(d, new object[] { text });
+                if (minX > data.XValue) minX = data.XValue;
+                if (maxX < data.XValue) maxX = data.XValue;
+                if (minY > data.YValues[0]) minY = data.YValues[0];
+                if (maxY < data.YValues[0]) maxY = data.YValues[0];
+            }
+        }
+        delegate void SetMinMaxCallback();
+        private void SetMinMax()
+        {
+            if (this.TxtConsole.InvokeRequired)
+            {
+                SetMinMaxCallback d = new SetMinMaxCallback(SetMinMax);
+                try
+                {
+                    this.Invoke(d, new object[] { });
+                }
+                catch
+                {
+                }
             }
             else
             {
-                int st = this.txt_Console.SelectionStart;
-                int ln = this.txt_Console.SelectionLength;
-                this.txt_Console.AppendText(text);
-                this.txt_Console.SelectionStart = st;
-                this.txt_Console.SelectionLength = ln;
+                foreach (Chart chart in chartsList)
+                {
+                    chart.ChartAreas[0].AxisX.Minimum = MinX;
+                    chart.ChartAreas[0].AxisX.Maximum = MaxX;
+                    double dY = (MaxY - MinY) / 20.0 + 0.05;
+                    chart.ChartAreas[0].AxisY.Minimum = Floor(MinY - dY, 0.1);
+                    chart.ChartAreas[0].AxisY.Maximum = Ceiling(MaxY + dY, 0.1);
+                    dY = (MaxY2 - MinY2) / 20.0 + 0.05;
+                    chart.ChartAreas[0].AxisY2.Minimum = Floor(MinY2 - dY, 0.1);
+                    chart.ChartAreas[0].AxisY2.Maximum = Ceiling(MaxY2 + dY, 0.1);
+                }
+            }
+        }
+
+        delegate void AppendTextCallback(string text);
+        private void AppendText(string text)
+        {
+            if (this.TxtConsole.InvokeRequired)
+            {
+                AppendTextCallback d = new AppendTextCallback(AppendText);
+                try
+                {
+                    this.Invoke(d, new object[] { text });
+                }
+                catch
+                { }
+            }
+            else
+            {
+                try
+                {
+                    int st = this.TxtConsole.SelectionStart;
+                    int ln = this.TxtConsole.SelectionLength;
+                    this.TxtConsole.AppendText(DateTime.Now.ToString("[dd/MM/yy_HH:mm:ss] ") + text);
+                    this.TxtConsole.SelectionStart = st;
+                    this.TxtConsole.SelectionLength = ln;
+                }
+                catch
+                {
+
+                }
+            }
+        }
+        #region Add Data To Chart
+        //private void PerformAdd(Chart chart, Record record)
+        //{
+        //    if (chart.Series[0].Points.Count > 9)
+        //    {
+        //        chart.Series[0].Points.RemoveAt(0);
+        //    }
+        //    float temp = record.temp;
+        //    chart.Series[0].Points.AddXY(DateTime.Now, temp);
+        //    string[] devids = new string[] { "1", "2", "3" };
+        //    FindMinMax(chart.Series[0].Points,
+        //       out double minX, out double maxX, out double minY, out double maxY);
+        //    chart.ChartAreas[0].AxisX.Minimum = minX;
+        //    chart.ChartAreas[0].AxisX.Maximum = maxX;
+        //    chart.ChartAreas[0].AxisY.Minimum = Floor(minY - 0.05, 0.1);
+        //    chart.ChartAreas[0].AxisY.Maximum = Ceiling(maxY + 0.05, 0.1);
+
+        //    if (chart.Series[1].Points.Count > 9)
+        //    {
+        //        chart.Series[1].Points.RemoveAt(0);
+        //    }
+        //    float humidity = record.humidity;
+        //    chart.Series[1].Points.AddXY(DateTime.Now, humidity);
+        //    FindMinMax(chart.Series[1].Points,
+        //        out minX, out maxX, out minY, out maxY);
+        //    chart.ChartAreas[0].AxisY2.Minimum = Floor(minY - 0.05, 0.1);
+        //    chart.ChartAreas[0].AxisY2.Maximum = Ceiling(maxY + 0.05, 0.1);
+        //}
+        //delegate void AddChartDataCallback(Chart chart, Record record);
+        //private void AddChartData(Chart chart, Record record)
+        //{
+        //    if (this.TxtConsole.InvokeRequired)
+        //    {
+        //        AddChartDataCallback d = new AddChartDataCallback(AddChartData);
+        //        this.Invoke(d, new object[] { chart, record });
+        //    }
+        //    else
+        //    {
+        //        PerformAdd(chart, record);
+        //    }
+        //}
+        #endregion
+        delegate void SetChartDataCallback(Chart chart, Record[] records);
+        private void SetChartData(Chart chart, Record[] records)
+        {
+            if (this.TxtConsole.InvokeRequired)
+            {
+                SetChartDataCallback d = new SetChartDataCallback(SetChartData);
+                this.Invoke(d, new object[] { chart, records });
+            }
+            else
+            {
+                chartsList.Add(chart);
+                chart.Series[0].Points.Clear();
+                chart.Series[1].Points.Clear();
+                foreach (Record record in records)
+                {
+                    DateTime dateTime = new DateTime(record.GetTime() * TimeSpan.TicksPerSecond);
+                    chart.Series[0].Points.AddXY(dateTime, record.temp);
+                    chart.Series[1].Points.AddXY(dateTime, record.humidity);
+                }
+                FindMinMax(chart.Series[0].Points,
+                    out double minX, out double maxX, out double minY, out double maxY);
+                MinX = MinX > minX ? minX : MinX;
+                MaxX = MaxX < maxX ? maxX : MaxX;
+                MinY = MinY > minY ? minY : MinY;
+                MaxY = MaxY < maxY ? maxY : MaxY;
+
+                FindMinMax(chart.Series[1].Points,
+                    out minX, out maxX, out minY, out maxY);
+                MinX = MinX > minX ? minX : MinX;
+                MaxX = MaxX < maxX ? maxX : MaxX;
+                MinY2 = MinY2 > minY ? minY : MinY2;
+                MaxY2 = MaxY2 < maxY ? maxY : MaxY2;
             }
         }
 
         private void WriteToBoard(object sender, SerialDataReceivedEventArgs e)
         {
             string receivedText = ComManager.Instance.ReceiveData();
-            AppendText(receivedText.ToString());
-            Record record = new Record();
-            record.Intput(receivedText);
-            recordsQueue.Enqueue(record);
+            if (receivedText != "Fault")
+            {
+                AppendText(receivedText);
+                if (receivedText.StartsWith("Log: "))
+                {
+                    int length = receivedText.Length - 5;
+                    if (length > 0)
+                    {
+                        DataManager.Instance.Log(receivedText.Substring(5));
+                    }
+                }
+                else
+                {
+                    Record record = new Record();
+                    if (record.Input(receivedText))
+                    {
+                        recordsList.Add(record);
+                    }
+                    else
+                    {
+                        DataManager.Instance.ErrorLog(receivedText);
+                    }
+                }
+            }
         }
-
         private void ComSet(bool open, string portName = "", int baudRate = 0)
         {
             if (open)
             {
                 ComManager.Instance.DataIncoming += WriteToBoard;
                 ComManager.Instance.OpenPort(portName: portName, baudRate: baudRate);
-                this.btn_Open.BackgroundImage = Properties.Resources.exit;
+                this.BtnOpen.BackgroundImage = Properties.Resources.exit;
+                toolTip.SetToolTip(BtnOpen, "Stop And Close");
                 this.connectedCom = portName;
                 this.connectedBaudRate = baudRate;
                 timer.Start();
+                UpdateCharts();
             }
             else
             {
                 ComManager.Instance.DataIncoming -= WriteToBoard;
                 ComManager.Instance.ClosePort();
-                this.btn_Open.BackgroundImage = Properties.Resources.play;
+                this.BtnOpen.BackgroundImage = Properties.Resources.play;
+                toolTip.SetToolTip(BtnOpen, "Open And Start Monitoring");
                 this.connectedCom = "";
                 this.connectedBaudRate = 0;
                 timer.Stop();
                 WriteDataTask(null, null);
             }
             this.isOpen = open;
-            txt_Status.Text = String.Format("Port: {0}     Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
+            LabelStatus.Text = String.Format("Port: {0} Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
         }
-
-        private void Open_Click(object sender, EventArgs e)
+        private void BtnOpenClick(object sender, EventArgs e)
         {
-            ComSet(!this.isOpen, this.combo_ComList.SelectedItem.ToString(), 9600);
+            ComSet(!this.isOpen, this.ComboComList.SelectedItem.ToString(), 9600);
         }
-
-        private void Button2_Click(object sender, EventArgs e)
+        private void Paging(string boardid, string devid, int page, int pageSize)
         {
-            Record record = new Record();
-            record.Intput("b:1,d:1,t:30.21,h:76.25");
-            recordsQueue.Enqueue(record);
-        }
+            if (boardid != null)
+            {
+                currBoardId = boardid;
+            }
+            else
+            {
+                boardid = currBoardId;
+            }
+            if (devid != null)
+            {
+                currDevId = devid;
+            }
+            else
+            {
+                devid = currDevId;
+            }
+            int rowsCount = DataManager.Instance.GetRowsCount(boardid, devid);
+            int pageCount = (rowsCount - 1) / pageSize;
+            if (page == -11)
+            {
+                page = pageCount;
+            }
+            if (page >= 0 && page <= pageCount)
+            {
+                this.page = page;
+                this.pageSize = pageSize;
 
-        private void Button1_Click(object sender, EventArgs e)
+                DataSet dataSet = DataManager.Instance.GetDataSource(boardid, devid, page, pageSize);
+                dataGridView1.DataSource = dataSet.Tables[0].DefaultView;
+                LabelPages.Text = String.Format("{0} / {1}",
+                    page + 1,
+                    (DataManager.Instance.GetRowsCount(boardid, devid) - 1) / pageSize + 1);
+                BtnFirstPage.Enabled = (page > 0);
+                BtnPreviousPage.Enabled = (page > 0);
+                BtnLastPage.Enabled = (page < pageCount);
+                BtnNextPage.Enabled = (page < pageCount);
+                //Console.WriteLine(DataManager.Instance.GetRowsCount(boardid, devid));
+            }
+        }
+        private void BtnReadDbClick(object sender, EventArgs e)
         {
             dataGridView1.AutoGenerateColumns = true;
-            
-            dataGridView1.DataSource = DataManager.Instance.GetDataSource().Tables[0].DefaultView;
-            //// Automatically resize the visible rows.
-            //dataGridView1.AutoSizeRowsMode =
-            //    DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
+            string boardid = "[All]", devid = "[All]";
+            if (BoardsList.SelectedItem != null)
+            {
+                boardid = BoardsList.SelectedItem.ToString();
+                if (DevidsList.SelectedItem != null)
+                {
+                    devid = DevidsList.SelectedItem.ToString();
+                }
+            }
+            Paging(boardid, devid, 0, 10);
         }
 
         private void WriteDataTask(object sender, EventArgs e)
         {
-            if (recordsQueue.Count <= 0)
+            recordsListClone = new List<Record>(recordsList.ToArray());
+            recordsList.Clear();
+            if (recordsListClone.Count <= 0)
             {
                 return;
             }
-            try
+            Thread thread = new Thread(DataTask);
+            thread.Start();
+        }
+
+        private void BtnGetBoardsListClick(object sender, EventArgs e)
+        {
+            object selected = BoardsList.SelectedItem;
+            BoardsList.Items.Clear();
+            BoardsList.Items.Add("[All]");
+            BoardsList.Items.AddRange(DataManager.Instance.GetBoardsList());
+            BoardsList.Refresh();
+
+            DevidsList.Items.Clear();
+            DevidsList.Items.Add("[All]");
+            DevidsList.Refresh();
+            if (selected != null && BoardsList.Items.Contains(selected))
             {
-                for (; ; )
+                BoardsList.SelectedItem = selected;
+            }
+            else
+            {
+                BoardsList.SelectedIndex = 0;
+                BoardsList.SelectedIndexChanged += BtnGetDevidsListClick;
+            }
+            BtnGetDevidsListClick(null, null);
+        }
+        private void BtnFirstPageClick(object sender, EventArgs e)
+        {
+            Paging(null, null, 0, pageSize);
+        }
+
+        private void BtnPreviousPageClick(object sender, EventArgs e)
+        {
+            Paging(null, null, page - 1, pageSize);
+        }
+
+        private void BtnNextPageClick(object sender, EventArgs e)
+        {
+            Paging(null, null, page + 1, pageSize);
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BtnLastPageClick(object sender, EventArgs e)
+        {
+            Paging(null, null, -11, pageSize);
+        }
+
+        private void BtnGetDevidsListClick(object sender, EventArgs e)
+        {
+            if (BoardsList.SelectedItem != null)
+            {
+                object selected = DevidsList.SelectedItem;
+                DevidsList.Items.Clear();
+                DevidsList.Items.Add("[All]");
+                DevidsList.Items.AddRange(DataManager.Instance.GetDevidsList(BoardsList.SelectedItem.ToString()));
+                if (selected != null && DevidsList.Items.Contains(selected))
                 {
-                    recordsQueue.Dequeue().UnsafeSave();
+                    DevidsList.SelectedItem = selected;
+                }
+                else
+                {
+                    DevidsList.SelectedIndex = 0;
+                }
+                DevidsList.Refresh();
+            }
+        }
+        private void DataTask()
+        {
+            recordsListClone.Sort(delegate (Record x, Record y)
+            {
+                if (x == null && y == null) return 0;
+                else if (x == null) return -1;
+                else if (y == null) return 1;
+                else return x.CompareTo(y);
+            });
+            Record gabbage = new Record();
+            gabbage.Input("JUNK", "JUNK", 0.0f, 0.0f, 0);
+            recordsListClone.Add(gabbage);
+            Record[] records = recordsListClone.ToArray();
+            if (records.Length > 1)
+            {
+                int start = 0;
+                float mTemp = 0, mHumidity = 0;
+                for (int i = 0; i < records.Length; i++)
+                {
+                    if (records[start].reference != records[i].reference)
+                    {
+                        int count = i - start;
+                        mTemp /= count;
+                        mHumidity /= count;
+                        Record averageRecord = new Record();
+                        averageRecord.Input(records[start].boardid,
+                            records[start].devid,
+                            mTemp,
+                            mHumidity,
+                            count);
+                        averageRecord.SetTime(records[start].GetTime());
+                        recordsListClone.Add(averageRecord);
+                        start = i;
+                        mTemp = 0;
+                        mHumidity = 0;
+                    }
+                    mTemp += records[i].temp;
+                    mHumidity += records[i].humidity;
                 }
             }
-            catch
+            else
             {
+                recordsListClone.AddRange(records);
             }
+            foreach (Record re in recordsListClone)
+            {
+                re.UnsafeSave();
+            }
+            UpdateCharts();
+        }
+
+        private void UpdateCharts()
+        {
+            ClearMinMax();
+            Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", Constants.historyInterval);
+            SetChartData(chart1, drawRecords);
+            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", Constants.historyInterval);
+            SetChartData(chart2, drawRecords);
+            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", Constants.historyInterval);
+            SetChartData(chart3, drawRecords);
+            SetMinMax();
         }
     }
 }

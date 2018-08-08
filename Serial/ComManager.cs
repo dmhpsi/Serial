@@ -41,6 +41,8 @@ namespace Serial
             port.PortName = portName;
             port.BaudRate = baudRate;
             port.DataReceived += DataIncoming;
+            port.StopBits = StopBits.One;
+            //port.NewLine = "\r\n";
             try
             {
                 port.Open();
@@ -61,7 +63,24 @@ namespace Serial
 
         public string ReceiveData()
         {
-            return port.ReadExisting();
+            string result = "";
+            while (true)
+            {
+                char ch;
+                try
+                {
+                    ch = (char)port.ReadChar();
+                    result += ch;
+                }
+                catch
+                {
+                    return "Fault";
+                }
+                if (ch == '\n')
+                {
+                    return result;
+                }
+            }
         }
 
         public event SerialDataReceivedEventHandler DataIncoming;

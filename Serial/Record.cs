@@ -11,13 +11,66 @@ namespace Serial
     public class Record
     {
         public const int numParam = 4;
-        public const int interval = 300;
-        public string devid, boardid;
+        public string devid, boardid, reference;
         public float temp, humidity;
-        public long time;
+        private long time;
+        public int count;
 
-        public bool Intput(string raw)
+        private void GenerateReference()
         {
+            reference = String.Format("{0:20},{1:20},{2:20}", boardid, devid, time);
+        }
+        public void SetTime(long newTime)
+        {
+            this.time = newTime;
+            GenerateReference();
+        }
+        public long GetTime()
+        {
+            return this.time;
+        }
+
+        private long GetUnixTimestamp()
+        {
+            long epochTicks = new DateTime(1970, 1, 1).Ticks;
+            long res = ((DateTime.UtcNow.Ticks - epochTicks) / TimeSpan.TicksPerSecond);
+            res -= res % Constants.dataInterval;
+            return res;
+        }
+
+        public bool Input(object boardid, object time, object devid, object temp, object humidity, object count)
+        {
+            try
+            {
+                long epochTicks = new DateTime(1970, 1, 1).Ticks;
+                this.devid = devid.ToString();
+                this.boardid = boardid.ToString();
+                this.temp = float.Parse(temp.ToString());
+                this.humidity = float.Parse(humidity.ToString());
+                this.time = long.Parse(time.ToString()) + epochTicks / TimeSpan.TicksPerSecond;
+                this.count = int.Parse(count.ToString());
+                GenerateReference();
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+        public void Input(string boardid, string devid, float temp, float humidity, int count)
+        {
+            this.devid = devid;
+            this.boardid = boardid;
+            this.temp = temp;
+            this.humidity = humidity;
+            this.time = GetUnixTimestamp();
+            GenerateReference();
+            this.count = count;
+        }
+        public bool Input(string raw)
+        {
+            raw = raw.Trim();
+            raw = raw.TrimEnd(';');
             string[] parts = raw.Trim().Split(',');
             if (parts.Length != numParam)
             {
@@ -44,7 +97,9 @@ namespace Serial
                     return false;
                 }
             }
-            this.time = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond / 1000;
+            this.time = GetUnixTimestamp();
+            GenerateReference();
+            count = 1;
             return true;
         }
         public void UnsafeSave()
@@ -55,11 +110,10 @@ namespace Serial
             }
             string sql;
             float mTemp = this.temp, mHumidity = this.humidity;
-            int mCount = 1;
-            long mTime = this.time - this.time % interval;
+            int mCount = this.count;
             string whereClause = " where boardid='" + this.boardid + "'"
                         + " and devid='" + this.devid + "'"
-                        + " and time=" + mTime;
+                        + " and timestamp=" + this.time;
 
             sql = "select * from " + DataManager.Instance.SqlDbName + whereClause;
             SQLiteCommand command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
@@ -67,9 +121,11 @@ namespace Serial
             if (reader.Read())
             {
                 mCount = (int)reader["count"];
-                mTemp = (this.temp + float.Parse(reader["temp"].ToString()) * mCount) / (mCount + 1);
-                mHumidity = (this.humidity + float.Parse((string)reader["humidity"].ToString()) * mCount) / (mCount + 1);
-                mCount++;
+                mTemp = (this.temp * this.count + float.Parse(reader["temp"].ToString()) * mCount) 
+                    / (this.count + mCount);
+                mHumidity = (this.humidity * this.count + float.Parse(reader["humidity"].ToString()) * mCount) 
+                    / (this.count + mCount);
+                mCount += this.count;
 
                 sql = "delete from " + DataManager.Instance.SqlDbName + whereClause;
                 command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
@@ -85,7 +141,7 @@ namespace Serial
                 mCount,
                 this.boardid,
                 this.devid,
-                mTime,
+                this.time,
                 mTemp,
                 mHumidity);
             command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
@@ -102,6 +158,16 @@ namespace Serial
                 return false;
             }
             return true;
+        }
+
+        public int CompareTo(Record y)
+        {
+            if (y == null)
+                return 1;
+            else
+            {
+                return reference.CompareTo(y.reference);
+            }
         }
     }
 }

@@ -9,17 +9,38 @@ namespace Serial
 {
     public sealed class ComManager
     {
+        System.Windows.Forms.Timer timer;
+        public event SerialDataReceivedEventHandler DataIncoming;
+        public delegate void SerialPortDisconnected(object sender, SerialPortDisconnected e);
+        public event SerialPortDisconnected Disconnected;
         private ComManager()
         {
             port = new SerialPort();
+            timer = new System.Windows.Forms.Timer
+            {
+                Interval = 1000
+            };
+            timer.Tick += CheckAlive;
+        }
+
+        private void CheckAlive(object sender, EventArgs e)
+        {
+            try
+            {
+                port.Write("a");
+            }
+            catch
+            {
+                ClosePort();
+                timer.Stop();
+                Disconnected?.Invoke(null, null);
+            }
         }
 
         public static ComManager Instance { get { return Nested.instance; } }
 
         private class Nested
         {
-            // Explicit static constructor to tell C# compiler
-            // not to mark type as beforefieldinit
             static Nested()
             {
             }
@@ -46,6 +67,7 @@ namespace Serial
             try
             {
                 port.Open();
+                timer.Start();
             }
             catch
             {
@@ -56,7 +78,8 @@ namespace Serial
         public void ClosePort()
         {
             if (port.IsOpen)
-            {
+            { 
+                timer.Stop();
                 port.Close();
             }
         }
@@ -82,7 +105,5 @@ namespace Serial
                 }
             }
         }
-
-        public event SerialDataReceivedEventHandler DataIncoming;
     }
 }

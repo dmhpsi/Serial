@@ -160,7 +160,7 @@ namespace Serial
         public Record[] GetDataByLastTime(string boardid, string devid, long seconds)
         {
             DataSet dataSet = new DataSet();
-            string sql = String.Format("select * from {0} where boardid='{1}' and devid='{2}' and datetime(timestamp, 'unixepoch') >= datetime('now', '-{3} second')",
+            string sql = String.Format("select boardid, devid, temp, humidity, count, strftime('%s', datetime(timestamp, 'unixepoch', '+7 hour')) as timestamp from {0} where boardid='{1}' and devid='{2}' and datetime(timestamp, 'unixepoch') >= datetime('now', '-{3} second')",
                 SqlDbName,
                 boardid,
                 devid,

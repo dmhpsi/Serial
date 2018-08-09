@@ -64,6 +64,11 @@ namespace Serial
             this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
         }
 
+        //protected override void OnFormClosing(FormClosingEventArgs e)
+        //{
+        //    ComSet(false);
+        //}
+
         private void RefreshClick(object sender, EventArgs e)
         {
             this.BtnOpen.Enabled = false;
@@ -91,62 +96,6 @@ namespace Serial
         {
             return (Math.Round(x / spacing) * spacing);
         }
-        private void ClearMinMax()
-        {
-            MinX = 9999.0;
-            MinY = 9999.0;
-            MinY2 = 9999.0;
-            MaxX = -9999.0;
-            MaxY = -9999.0;
-            MaxY2 = -9999.0;
-            chartsList = new List<Chart>();
-        }
-        private void FindMinMax(DataPointCollection collection,
-            out double minX, out double maxX,
-            out double minY, out double maxY)
-        {
-            minX = 9999.0;
-            maxX = -9999.0;
-            minY = 9999.0;
-            maxY = -9999.0;
-            foreach (DataPoint data in collection)
-            {
-                if (minX > data.XValue) minX = data.XValue;
-                if (maxX < data.XValue) maxX = data.XValue;
-                if (minY > data.YValues[0]) minY = data.YValues[0];
-                if (maxY < data.YValues[0]) maxY = data.YValues[0];
-            }
-        }
-        delegate void SetMinMaxCallback();
-        private void SetMinMax()
-        {
-            if (this.TxtConsole.InvokeRequired)
-            {
-                SetMinMaxCallback d = new SetMinMaxCallback(SetMinMax);
-                try
-                {
-                    this.Invoke(d, new object[] { });
-                }
-                catch
-                {
-                }
-            }
-            else
-            {
-                foreach (Chart chart in chartsList)
-                {
-                    chart.ChartAreas[0].AxisX.Minimum = MinX;
-                    chart.ChartAreas[0].AxisX.Maximum = MaxX;
-                    double dY = (MaxY - MinY) / 20.0 + 0.05;
-                    chart.ChartAreas[0].AxisY.Minimum = Floor(MinY - dY, 0.1);
-                    chart.ChartAreas[0].AxisY.Maximum = Ceiling(MaxY + dY, 0.1);
-                    dY = (MaxY2 - MinY2) / 20.0 + 0.05;
-                    chart.ChartAreas[0].AxisY2.Minimum = Floor(MinY2 - dY, 0.1);
-                    chart.ChartAreas[0].AxisY2.Maximum = Ceiling(MaxY2 + dY, 0.1);
-                }
-            }
-        }
-
         delegate void AppendTextCallback(string text);
         private void AppendText(string text)
         {
@@ -218,9 +167,68 @@ namespace Serial
         //    }
         //}
         #endregion
+        private void ClearMinMax()
+        {
+            MinX = 9999.0;
+            MinY = 9999.0;
+            MinY2 = 9999.0;
+            MaxX = -9999.0;
+            MaxY = -9999.0;
+            MaxY2 = -9999.0;
+            chartsList = new List<Chart>();
+        }
+        private void FindMinMax(DataPointCollection collection,
+            out double minX, out double maxX,
+            out double minY, out double maxY)
+        {
+            minX = 9999.0;
+            maxX = -9999.0;
+            minY = 9999.0;
+            maxY = -9999.0;
+            foreach (DataPoint data in collection)
+            {
+                if (minX > data.XValue) minX = data.XValue;
+                if (maxX < data.XValue) maxX = data.XValue;
+                if (minY > data.YValues[0]) minY = data.YValues[0];
+                if (maxY < data.YValues[0]) maxY = data.YValues[0];
+            }
+        }
+        delegate void SetMinMaxCallback();
+        private void SetMinMax()
+        {
+            if (this.TxtConsole.InvokeRequired)
+            {
+                SetMinMaxCallback d = new SetMinMaxCallback(SetMinMax);
+                try
+                {
+                    this.Invoke(d, new object[] { });
+                }
+                catch
+                {
+                }
+            }
+            else
+            {
+                if (MinX > MaxX) MinX = MaxX;
+                if (MinY > MaxY) MinY = MaxY;
+                if (MinY2 > MaxY2) MinY2 = MaxY2;
+                foreach (Chart chart in chartsList)
+                {
+                    chart.ChartAreas[0].AxisX.Minimum = MinX;
+                    chart.ChartAreas[0].AxisX.Maximum = MaxX;
+                    double dY = (MaxY - MinY) / 20.0 + 0.05;
+                    chart.ChartAreas[0].AxisY.Minimum = Floor(MinY - dY - 0.01, 0.1);
+                    chart.ChartAreas[0].AxisY.Maximum = Ceiling(MaxY + dY + 0.01, 0.1);
+                    dY = (MaxY2 - MinY2) / 20.0 + 0.05;
+                    chart.ChartAreas[0].AxisY2.Minimum = Floor(MinY2 - dY - 0.01, 0.1);
+                    chart.ChartAreas[0].AxisY2.Maximum = Ceiling(MaxY2 + dY + 0.01, 0.1);
+                }
+            }
+        }
         delegate void SetChartDataCallback(Chart chart, Record[] records);
         private void SetChartData(Chart chart, Record[] records)
         {
+
             if (this.TxtConsole.InvokeRequired)
             {
                 SetChartDataCallback d = new SetChartDataCallback(SetChartData);
@@ -286,6 +294,7 @@ namespace Serial
             if (open)
             {
                 ComManager.Instance.DataIncoming += WriteToBoard;
+                ComManager.Instance.Disconnected += PortDisconnected;
                 ComManager.Instance.OpenPort(portName: portName, baudRate: baudRate);
                 this.BtnOpen.BackgroundImage = Properties.Resources.exit;
                 toolTip.SetToolTip(BtnOpen, "Stop And Close");
@@ -297,6 +306,7 @@ namespace Serial
             else
             {
                 ComManager.Instance.DataIncoming -= WriteToBoard;
+                ComManager.Instance.Disconnected -= PortDisconnected;
                 ComManager.Instance.ClosePort();
                 this.BtnOpen.BackgroundImage = Properties.Resources.play;
                 toolTip.SetToolTip(BtnOpen, "Open And Start Monitoring");
@@ -308,6 +318,12 @@ namespace Serial
             this.isOpen = open;
             LabelStatus.Text = String.Format("Port: {0} Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
         }
+
+        private void PortDisconnected(object sender, ComManager.SerialPortDisconnected e)
+        {
+            ComSet(false);
+        }
+
         private void BtnOpenClick(object sender, EventArgs e)
         {
             ComSet(!this.isOpen, this.ComboComList.SelectedItem.ToString(), 9600);
@@ -350,7 +366,6 @@ namespace Serial
                 BtnPreviousPage.Enabled = (page > 0);
                 BtnLastPage.Enabled = (page < pageCount);
                 BtnNextPage.Enabled = (page < pageCount);
-                //Console.WriteLine(DataManager.Instance.GetRowsCount(boardid, devid));
             }
         }
         private void BtnReadDbClick(object sender, EventArgs e)
@@ -416,12 +431,7 @@ namespace Serial
         {
             Paging(null, null, page + 1, pageSize);
         }
-
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
+        
         private void BtnLastPageClick(object sender, EventArgs e)
         {
             Paging(null, null, -11, pageSize);
@@ -499,14 +509,21 @@ namespace Serial
 
         private void UpdateCharts()
         {
-            ClearMinMax();
-            Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", Constants.historyInterval);
-            SetChartData(chart1, drawRecords);
-            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", Constants.historyInterval);
-            SetChartData(chart2, drawRecords);
-            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", Constants.historyInterval);
-            SetChartData(chart3, drawRecords);
-            SetMinMax();
+            try
+            {
+                ClearMinMax();
+                Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", Constants.historyInterval);
+                SetChartData(chart1, drawRecords);
+                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", Constants.historyInterval);
+                SetChartData(chart2, drawRecords);
+                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", Constants.historyInterval);
+                SetChartData(chart3, drawRecords);
+                SetMinMax();
+            }
+            catch
+            {
+
+            }
         }
     }
 }

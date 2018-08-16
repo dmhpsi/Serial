@@ -1,15 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Serial
+﻿namespace Serial
 {
+    class ComboObject
+    {
+        string text;
+        public object value;
+
+        public ComboObject(string text, object value)
+        {
+            this.text = text;
+            this.value = value;
+        }
+
+        public override string ToString()
+        {
+            return text;
+        }
+    }
     static class Constants
     {
-        public const int saveInterval = 60; //seconds
-        public const int dataInterval = 600; //seconds
-        public const int historyInterval = 7200; //seconds
+        public const int saveInterval = 5; //seconds
+        //public const long dataInterval = 600; //seconds
+        //public const long historyInterval = 7200; //seconds
     }
 }

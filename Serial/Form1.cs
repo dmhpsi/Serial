@@ -13,13 +13,26 @@ namespace Serial
         bool isOpen;
         string connectedCom;
         int connectedBaudRate;
-        private static List<Record> recordsList, recordsListClone;
+        private static List<Record> recordsList;
         private static System.Windows.Forms.Timer timer;
         private int page, pageSize;
         private string currBoardId, currDevId;
         private ToolTip toolTip;
         private double MinX, MaxX, MinY, MaxY, MinY2, MaxY2;
         private List<Chart> chartsList;
+        private string dateTimeFormatPattern = "dd/MM/yyyy HH:mm";
+        private ComboObject[] intervalObjects = {
+            new ComboObject("1 hour", 3600),
+            new ComboObject("2 hours", 7200),
+            new ComboObject("6 hours", 21600),
+            new ComboObject("12 hours", 43200),
+            new ComboObject("24 hours", 86400),
+            new ComboObject("3 days", 259200),
+            new ComboObject("7 days", 604800),
+            new ComboObject("30 days", 2592000),
+        };
+        private ComboObject selectedInterval;
+        private long lastMigrate1hour = 0, lastMigrate1min = 0;
 
         public Form1()
         {
@@ -52,22 +65,26 @@ namespace Serial
             toolTip.SetToolTip(BtnReadDb, "Read The DataBase");
             toolTip.SetToolTip(BtnRefresh, "Get COMs list");
             ComSet(false);
+            this.ComboIntervalList.Items.Clear();
+            this.ComboIntervalList.Items.AddRange(intervalObjects);
+            this.ComboIntervalList.SelectedIndex = 1;
+            this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
+            this.ComboIntervalList.SelectedIndexChanged += delegate {
+                this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
+            };
 
-            this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart1.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart1.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
-            this.chart2.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            //this.chart1.Series[0].IsXValueIndexed = true;
+            //this.chart1.Series[1].IsXValueIndexed = true;
+            this.chart2.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart2.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart2.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
-            this.chart3.ChartAreas[0].AxisX.LabelStyle.Format = "hh:mm";
+            this.chart3.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
         }
-
-        //protected override void OnFormClosing(FormClosingEventArgs e)
-        //{
-        //    ComSet(false);
-        //}
 
         private void RefreshClick(object sender, EventArgs e)
         {
@@ -214,12 +231,12 @@ namespace Serial
                 if (MinY2 > MaxY2) MinY2 = MaxY2;
                 foreach (Chart chart in chartsList)
                 {
-                    chart.ChartAreas[0].AxisX.Minimum = MinX;
-                    chart.ChartAreas[0].AxisX.Maximum = MaxX;
-                    double dY = (MaxY - MinY) / 20.0 + 0.05;
+                    //chart.ChartAreas[0].AxisX.Minimum = MinX;
+                    //chart.ChartAreas[0].AxisX.Maximum = MaxX;
+                    double dY = (MaxY - MinY) / 10.0 + 0.05;
                     chart.ChartAreas[0].AxisY.Minimum = Floor(MinY - dY - 0.01, 0.1);
                     chart.ChartAreas[0].AxisY.Maximum = Ceiling(MaxY + dY + 0.01, 0.1);
-                    dY = (MaxY2 - MinY2) / 20.0 + 0.05;
+                    dY = (MaxY2 - MinY2) / 10.0 + 0.05;
                     chart.ChartAreas[0].AxisY2.Minimum = Floor(MinY2 - dY - 0.01, 0.1);
                     chart.ChartAreas[0].AxisY2.Maximum = Ceiling(MaxY2 + dY + 0.01, 0.1);
                 }
@@ -236,28 +253,32 @@ namespace Serial
             }
             else
             {
-                chartsList.Add(chart);
-                chart.Series[0].Points.Clear();
-                chart.Series[1].Points.Clear();
-                foreach (Record record in records)
+                if (records.Length > 1)
                 {
-                    DateTime dateTime = new DateTime(record.GetTime() * TimeSpan.TicksPerSecond);
-                    chart.Series[0].Points.AddXY(dateTime, record.temp);
-                    chart.Series[1].Points.AddXY(dateTime, record.humidity);
-                }
-                FindMinMax(chart.Series[0].Points,
-                    out double minX, out double maxX, out double minY, out double maxY);
-                MinX = MinX > minX ? minX : MinX;
-                MaxX = MaxX < maxX ? maxX : MaxX;
-                MinY = MinY > minY ? minY : MinY;
-                MaxY = MaxY < maxY ? maxY : MaxY;
+                    chartsList.Add(chart);
+                    chart.Series[0].Points.Clear();
+                    chart.Series[1].Points.Clear();
+                    foreach (Record record in records)
+                    {
+                        long ticks = record.GetTime() * TimeSpan.TicksPerSecond;
+                        DateTime dateTime = new DateTime(ticks);
+                        chart.Series[0].Points.AddXY(dateTime.ToOADate(), record.temp);
+                        chart.Series[1].Points.AddXY(dateTime.ToOADate(), record.humidity);
+                    }
+                    FindMinMax(chart.Series[0].Points,
+                        out double minX, out double maxX, out double minY, out double maxY);
+                    //MinX = MinX > minX ? minX : MinX;
+                    //MaxX = MaxX < maxX ? maxX : MaxX;
+                    MinY = MinY > minY ? minY : MinY;
+                    MaxY = MaxY < maxY ? maxY : MaxY;
 
-                FindMinMax(chart.Series[1].Points,
-                    out minX, out maxX, out minY, out maxY);
-                MinX = MinX > minX ? minX : MinX;
-                MaxX = MaxX < maxX ? maxX : MaxX;
-                MinY2 = MinY2 > minY ? minY : MinY2;
-                MaxY2 = MaxY2 < maxY ? maxY : MaxY2;
+                    FindMinMax(chart.Series[1].Points,
+                        out minX, out maxX, out minY, out maxY);
+                    //MinX = MinX > minX ? minX : MinX;
+                    //MaxX = MaxX < maxX ? maxX : MaxX;
+                    MinY2 = MinY2 > minY ? minY : MinY2;
+                    MaxY2 = MaxY2 < maxY ? maxY : MaxY2;
+                }
             }
         }
 
@@ -385,14 +406,43 @@ namespace Serial
 
         private void WriteDataTask(object sender, EventArgs e)
         {
-            recordsListClone = new List<Record>(recordsList.ToArray());
-            recordsList.Clear();
-            if (recordsListClone.Count <= 0)
-            {
-                return;
-            }
+            //recordsListClone = new List<Record>(recordsList.ToArray());
+            //recordsList.Clear();
+            //if (recordsListClone.Count <= 0)
+            //{
+            //    return;
+            //}
             Thread thread = new Thread(DataTask);
             thread.Start();
+        }
+        private void DataTask()
+        {
+            if (recordsList.Count <= 0)
+                return;
+            Record[] records = recordsList.ToArray();
+            foreach (Record record in records)
+            {
+                record.UnsafeSave();
+            }
+            recordsList.Clear();
+            UpdateCharts();
+            if (lastMigrate1min == 0)
+                lastMigrate1min = DataManager.Instance.GetLastMigrateTimestamp(DataManager.DbSelect.avg1min);
+            long now = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
+            if (now - lastMigrate1min > 60)
+            {
+                long standardTime = now / 60 * 60;
+                DataManager.Instance.Migrate(DataManager.DbSelect.raw, DataManager.DbSelect.avg1min, standardTime);
+                lastMigrate1min = standardTime;
+            }
+            if (lastMigrate1hour == 0)
+                lastMigrate1hour = DataManager.Instance.GetLastMigrateTimestamp(DataManager.DbSelect.avg1hour);
+            if (now - lastMigrate1hour > 3600)
+            {
+                long standardTime = now / 3600 * 3600;
+                DataManager.Instance.Migrate(DataManager.DbSelect.avg1min, DataManager.DbSelect.avg1hour, standardTime);
+                lastMigrate1hour = standardTime;
+            }
         }
 
         private void BtnGetBoardsListClick(object sender, EventArgs e)
@@ -431,7 +481,7 @@ namespace Serial
         {
             Paging(null, null, page + 1, pageSize);
         }
-        
+
         private void BtnLastPageClick(object sender, EventArgs e)
         {
             Paging(null, null, -11, pageSize);
@@ -456,74 +506,77 @@ namespace Serial
                 DevidsList.Refresh();
             }
         }
-        private void DataTask()
-        {
-            recordsListClone.Sort(delegate (Record x, Record y)
-            {
-                if (x == null && y == null) return 0;
-                else if (x == null) return -1;
-                else if (y == null) return 1;
-                else return x.CompareTo(y);
-            });
-            Record gabbage = new Record();
-            gabbage.Input("JUNK", "JUNK", 0.0f, 0.0f, 0);
-            recordsListClone.Add(gabbage);
-            Record[] records = recordsListClone.ToArray();
-            if (records.Length > 1)
-            {
-                int start = 0;
-                float mTemp = 0, mHumidity = 0;
-                for (int i = 0; i < records.Length; i++)
-                {
-                    if (records[start].reference != records[i].reference)
-                    {
-                        int count = i - start;
-                        mTemp /= count;
-                        mHumidity /= count;
-                        Record averageRecord = new Record();
-                        averageRecord.Input(records[start].boardid,
-                            records[start].devid,
-                            mTemp,
-                            mHumidity,
-                            count);
-                        averageRecord.SetTime(records[start].GetTime());
-                        recordsListClone.Add(averageRecord);
-                        start = i;
-                        mTemp = 0;
-                        mHumidity = 0;
-                    }
-                    mTemp += records[i].temp;
-                    mHumidity += records[i].humidity;
-                }
-            }
-            else
-            {
-                recordsListClone.AddRange(records);
-            }
-            foreach (Record re in recordsListClone)
-            {
-                re.UnsafeSave();
-            }
-            UpdateCharts();
-        }
+
+        //private void DataTask()
+        //{
+        //    recordsListClone.Sort(delegate (Record x, Record y)
+        //    {
+        //        if (x == null && y == null) return 0;
+        //        else if (x == null) return -1;
+        //        else if (y == null) return 1;
+        //        else return x.CompareTo(y);
+        //    });
+        //    Record gabbage = new Record();
+        //    gabbage.Input("JUNK", "JUNK", 0.0f, 0.0f, 0);
+        //    recordsListClone.Add(gabbage);
+        //    Record[] records = recordsListClone.ToArray();
+        //    if (records.Length > 1)
+        //    {
+        //        int start = 0;
+        //        float mTemp = 0, mHumidity = 0;
+        //        for (int i = 0; i < records.Length; i++)
+        //        {
+        //            if (records[start].reference != records[i].reference)
+        //            {
+        //                int count = i - start;
+        //                mTemp /= count;
+        //                mHumidity /= count;
+        //                Record averageRecord = new Record();
+        //                averageRecord.Input(records[start].boardid,
+        //                    records[start].devid,
+        //                    mTemp,
+        //                    mHumidity,
+        //                    count);
+        //                averageRecord.SetTime(records[start].GetTime());
+        //                recordsListClone.Add(averageRecord);
+        //                start = i;
+        //                mTemp = 0;
+        //                mHumidity = 0;
+        //            }
+        //            mTemp += records[i].temp;
+        //            mHumidity += records[i].humidity;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        recordsListClone.AddRange(records);
+        //    }
+        //    foreach (Record re in recordsListClone)
+        //    {
+        //        re.UnsafeSave();
+        //    }
+        //    UpdateCharts();
+        //}
 
         private void UpdateCharts()
         {
-            try
-            {
+            //try
+            //{
                 ClearMinMax();
-                Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", Constants.historyInterval);
+                long historyInterval = long.Parse(selectedInterval.value.ToString());
+
+                Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", historyInterval);
                 SetChartData(chart1, drawRecords);
-                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", Constants.historyInterval);
+                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", historyInterval);
                 SetChartData(chart2, drawRecords);
-                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", Constants.historyInterval);
+                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", historyInterval);
                 SetChartData(chart3, drawRecords);
                 SetMinMax();
-            }
-            catch
-            {
+            //}
+            //catch
+            //{
 
-            }
+            //}
         }
     }
 }

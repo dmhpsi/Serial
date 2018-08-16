@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
@@ -47,6 +48,8 @@
             this.BtnRefresh = new System.Windows.Forms.Button();
             this.BtnOpen = new System.Windows.Forms.Button();
             this.LabelStatus = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.ComboIntervalList = new System.Windows.Forms.ComboBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -75,6 +78,7 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.dataManagerBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.layout_MainContainer.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -93,32 +97,37 @@
             this.tabPage3.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataManagerBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // layout_MainContainer
             // 
-            this.layout_MainContainer.ColumnCount = 4;
+            this.layout_MainContainer.ColumnCount = 5;
             this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
             this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
             this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.layout_MainContainer.Controls.Add(this.TxtConsole, 0, 0);
             this.layout_MainContainer.Controls.Add(this.ComboComList, 0, 1);
             this.layout_MainContainer.Controls.Add(this.BtnRefresh, 1, 1);
             this.layout_MainContainer.Controls.Add(this.BtnOpen, 2, 1);
-            this.layout_MainContainer.Controls.Add(this.LabelStatus, 3, 1);
+            this.layout_MainContainer.Controls.Add(this.LabelStatus, 0, 2);
+            this.layout_MainContainer.Controls.Add(this.label2, 3, 1);
+            this.layout_MainContainer.Controls.Add(this.ComboIntervalList, 4, 1);
             this.layout_MainContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.layout_MainContainer.Location = new System.Drawing.Point(10, 29);
             this.layout_MainContainer.Name = "layout_MainContainer";
-            this.layout_MainContainer.RowCount = 2;
+            this.layout_MainContainer.RowCount = 3;
             this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.layout_MainContainer.Size = new System.Drawing.Size(416, 197);
             this.layout_MainContainer.TabIndex = 0;
             // 
             // TxtConsole
             // 
-            this.layout_MainContainer.SetColumnSpan(this.TxtConsole, 4);
+            this.layout_MainContainer.SetColumnSpan(this.TxtConsole, 10);
             this.TxtConsole.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TxtConsole.HideSelection = false;
             this.TxtConsole.Location = new System.Drawing.Point(3, 3);
@@ -127,7 +136,7 @@
             this.TxtConsole.Name = "TxtConsole";
             this.TxtConsole.ReadOnly = true;
             this.TxtConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.TxtConsole.Size = new System.Drawing.Size(410, 152);
+            this.TxtConsole.Size = new System.Drawing.Size(410, 113);
             this.TxtConsole.TabIndex = 6;
             this.TxtConsole.WordWrap = false;
             // 
@@ -138,7 +147,7 @@
             this.ComboComList.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ComboComList.FormattingEnabled = true;
             this.ComboComList.ItemHeight = 25;
-            this.ComboComList.Location = new System.Drawing.Point(3, 161);
+            this.ComboComList.Location = new System.Drawing.Point(3, 122);
             this.ComboComList.Name = "ComboComList";
             this.ComboComList.Size = new System.Drawing.Size(94, 33);
             this.ComboComList.TabIndex = 1;
@@ -150,7 +159,7 @@
             this.BtnRefresh.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnRefresh.FlatAppearance.BorderSize = 0;
             this.BtnRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnRefresh.Location = new System.Drawing.Point(103, 161);
+            this.BtnRefresh.Location = new System.Drawing.Point(103, 122);
             this.BtnRefresh.Name = "BtnRefresh";
             this.BtnRefresh.Size = new System.Drawing.Size(36, 33);
             this.BtnRefresh.TabIndex = 2;
@@ -165,7 +174,7 @@
             this.BtnOpen.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnOpen.FlatAppearance.BorderSize = 0;
             this.BtnOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnOpen.Location = new System.Drawing.Point(145, 161);
+            this.BtnOpen.Location = new System.Drawing.Point(145, 122);
             this.BtnOpen.Name = "BtnOpen";
             this.BtnOpen.Size = new System.Drawing.Size(36, 33);
             this.BtnOpen.TabIndex = 3;
@@ -177,13 +186,34 @@
             // 
             this.LabelStatus.BackColor = System.Drawing.Color.WhiteSmoke;
             this.LabelStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.layout_MainContainer.SetColumnSpan(this.LabelStatus, 10);
             this.LabelStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LabelStatus.Location = new System.Drawing.Point(189, 163);
+            this.LabelStatus.Location = new System.Drawing.Point(5, 163);
             this.LabelStatus.Margin = new System.Windows.Forms.Padding(5);
             this.LabelStatus.Name = "LabelStatus";
-            this.LabelStatus.Size = new System.Drawing.Size(222, 29);
+            this.LabelStatus.Size = new System.Drawing.Size(406, 29);
             this.LabelStatus.TabIndex = 7;
             this.LabelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label2.Location = new System.Drawing.Point(187, 119);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(99, 39);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Interval";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // ComboIntervalList
+            // 
+            this.ComboIntervalList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ComboIntervalList.FormattingEnabled = true;
+            this.ComboIntervalList.Location = new System.Drawing.Point(292, 122);
+            this.ComboIntervalList.Name = "ComboIntervalList";
+            this.ComboIntervalList.Size = new System.Drawing.Size(121, 28);
+            this.ComboIntervalList.TabIndex = 9;
             // 
             // tabControl1
             // 
@@ -242,6 +272,8 @@
             // chart3
             // 
             this.chart3.BorderlineColor = System.Drawing.Color.Transparent;
+            chartArea1.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea1.AxisX.IsMarginVisible = false;
             chartArea1.AxisX.LabelAutoFitStyle = ((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles)((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.IncreaseFont | System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.DecreaseFont)));
             chartArea1.AxisX.LabelStyle.Angle = -30;
             chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -269,22 +301,24 @@
         System.Drawing.Color.Red,
         System.Drawing.Color.Blue};
             series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series1.Legend = "Legend1";
+            series1.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series1.Name = "Temp";
-            series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series1.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series2.Legend = "Legend1";
+            series2.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series2.Name = "Humidity";
-            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series2.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
             series2.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             this.chart3.Series.Add(series1);
             this.chart3.Series.Add(series2);
             this.chart3.Size = new System.Drawing.Size(431, 211);
-            this.chart3.TabIndex = 0;
+            this.chart3.TabIndex = 1;
             this.chart3.Text = "chart3";
             // 
             // groupBox3
@@ -301,6 +335,8 @@
             // chart2
             // 
             this.chart2.BorderlineColor = System.Drawing.Color.Transparent;
+            chartArea2.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea2.AxisX.IsMarginVisible = false;
             chartArea2.AxisX.LabelAutoFitStyle = ((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles)((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.IncreaseFont | System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.DecreaseFont)));
             chartArea2.AxisX.LabelStyle.Angle = -30;
             chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -328,16 +364,18 @@
         System.Drawing.Color.Red,
         System.Drawing.Color.Blue};
             series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series3.Legend = "Legend1";
+            series3.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series3.Name = "Temp";
-            series3.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series3.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series3.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             series4.ChartArea = "ChartArea1";
-            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series4.Legend = "Legend1";
+            series4.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series4.Name = "Humidity";
-            series4.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series4.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series4.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
             series4.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             this.chart2.Series.Add(series3);
@@ -360,6 +398,8 @@
             // chart1
             // 
             this.chart1.BorderlineColor = System.Drawing.Color.Transparent;
+            chartArea3.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea3.AxisX.IsMarginVisible = false;
             chartArea3.AxisX.LabelAutoFitStyle = ((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles)((System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.IncreaseFont | System.Windows.Forms.DataVisualization.Charting.LabelAutoFitStyles.DecreaseFont)));
             chartArea3.AxisX.LabelStyle.Angle = -30;
             chartArea3.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -387,22 +427,24 @@
         System.Drawing.Color.Red,
         System.Drawing.Color.Blue};
             series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series5.Legend = "Legend1";
+            series5.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series5.Name = "Temp";
-            series5.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series5.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series5.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series6.Legend = "Legend1";
+            series6.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series6.Name = "Humidity";
-            series6.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
+            series6.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             series6.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
             series6.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
             this.chart1.Series.Add(series5);
             this.chart1.Series.Add(series6);
             this.chart1.Size = new System.Drawing.Size(431, 211);
-            this.chart1.TabIndex = 0;
+            this.chart1.TabIndex = 1;
             this.chart1.Text = "chart1";
             // 
             // groupBox1
@@ -669,6 +711,10 @@
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
+            // dataManagerBindingSource
+            // 
+            this.dataManagerBindingSource.DataSource = typeof(Serial.DataManager);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -700,6 +746,7 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataManagerBindingSource)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -734,12 +781,15 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label LabelStatus;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.BindingSource dataManagerBindingSource;
+        private System.Windows.Forms.ComboBox ComboIntervalList;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
     }
 }
 

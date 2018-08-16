@@ -7,14 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Serial
-{    
+{
     public class Record
     {
         public const int numParam = 4;
         public string devid, boardid, reference;
         public float temp, humidity;
         private long time;
-        public int count;
 
         private void GenerateReference()
         {
@@ -30,25 +29,22 @@ namespace Serial
             return this.time;
         }
 
-        private long GetUnixTimestamp()
+        private long GetTimestamp()
         {
-            long epochTicks = new DateTime(1970, 1, 1).Ticks;
-            long res = ((DateTime.UtcNow.Ticks - epochTicks) / TimeSpan.TicksPerSecond);
-            res -= res % Constants.dataInterval;
+            long res = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
+            //res -= res % Constants.dataInterval;
             return res;
         }
 
-        public bool Input(object boardid, object time, object devid, object temp, object humidity, object count)
+        public bool Input(object boardid, object time, object devid, object temp, object humidity)
         {
             try
             {
-                long epochTicks = new DateTime(1970, 1, 1).Ticks;
                 this.devid = devid.ToString();
                 this.boardid = boardid.ToString();
                 this.temp = float.Parse(temp.ToString());
                 this.humidity = float.Parse(humidity.ToString());
-                this.time = long.Parse(time.ToString()) + epochTicks / TimeSpan.TicksPerSecond;
-                this.count = int.Parse(count.ToString());
+                this.time = long.Parse(time.ToString());
                 GenerateReference();
             }
             catch
@@ -57,15 +53,14 @@ namespace Serial
             }
             return true;
         }
-        public void Input(string boardid, string devid, float temp, float humidity, int count)
+        public void Input(string boardid, string devid, float temp, float humidity)
         {
             this.devid = devid;
             this.boardid = boardid;
             this.temp = temp;
             this.humidity = humidity;
-            this.time = GetUnixTimestamp();
+            this.time = GetTimestamp();
             GenerateReference();
-            this.count = count;
         }
         public bool Input(string raw)
         {
@@ -97,60 +92,79 @@ namespace Serial
                     return false;
                 }
             }
-            this.time = GetUnixTimestamp();
+            this.time = GetTimestamp();
             GenerateReference();
-            count = 1;
             return true;
         }
+        //public void UnsafeSave()
+        //{
+        //    if (devid == "JUNK" || boardid == "JUNK")
+        //    {
+        //        return;
+        //    }
+        //    string sql;
+        //    float mTemp = this.temp, mHumidity = this.humidity;
+        //    int mCount = this.count;
+        //    string whereClause = " where boardid='" + this.boardid + "'"
+        //                + " and devid='" + this.devid + "'"
+        //                + " and timestamp=" + this.time;
+
+        //    sql = "select * from " + DataManager.Instance.SqlDbName + whereClause;
+        //    SQLiteCommand command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
+        //    SQLiteDataReader reader = command.ExecuteReader();
+        //    if (reader.Read())
+        //    {
+        //        mCount = (int)reader["count"];
+        //        mTemp = (this.temp * this.count + float.Parse(reader["temp"].ToString()) * mCount)
+        //            / (this.count + mCount);
+        //        mHumidity = (this.humidity * this.count + float.Parse(reader["humidity"].ToString()) * mCount)
+        //            / (this.count + mCount);
+        //        mCount += this.count;
+
+        //        sql = "delete from " + DataManager.Instance.SqlDbName + whereClause;
+        //        command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
+        //        command.ExecuteNonQuery();
+        //    }
+
+        //    int[] nums = Enumerable.Range(0, numParam + 2).ToArray<int>();
+        //    string formatString = "insert into " + DataManager.Instance.SqlDbName + " ("
+        //        + string.Join(",", DataManager.SqlColumnNames)
+        //        + ") values ('{" + string.Join("}','{", nums) + "}')";
+        //    sql = String.Format(
+        //        formatString,
+        //        mCount,
+        //        this.boardid,
+        //        this.devid,
+        //        this.time,
+        //        mTemp,
+        //        mHumidity);
+        //    command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
+        //    command.ExecuteNonQuery();
+        //}
+
         public void UnsafeSave()
         {
-            if (devid == "JUNK" || boardid == "JUNK")
-            {
-                return;
-            }
-            string sql;
-            float mTemp = this.temp, mHumidity = this.humidity;
-            int mCount = this.count;
-            string whereClause = " where boardid='" + this.boardid + "'"
-                        + " and devid='" + this.devid + "'"
-                        + " and timestamp=" + this.time;
-
-            sql = "select * from " + DataManager.Instance.SqlDbName + whereClause;
-            SQLiteCommand command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
-            SQLiteDataReader reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                mCount = (int)reader["count"];
-                mTemp = (this.temp * this.count + float.Parse(reader["temp"].ToString()) * mCount) 
-                    / (this.count + mCount);
-                mHumidity = (this.humidity * this.count + float.Parse(reader["humidity"].ToString()) * mCount) 
-                    / (this.count + mCount);
-                mCount += this.count;
-
-                sql = "delete from " + DataManager.Instance.SqlDbName + whereClause;
-                command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
-                command.ExecuteNonQuery();
-            }
-
-            int[] nums = Enumerable.Range(0, numParam + 2).ToArray<int>();
-            string formatString = "insert into " + DataManager.Instance.SqlDbName + " ("
-                + string.Join(",", DataManager.SqlColumnNames)
-                + ") values ('{" + string.Join("}','{", nums) + "}')";
-            sql = String.Format(
+            int[] nums = Enumerable.Range(0, numParam + 1).ToArray<int>();
+            string formatString = "insert into " + DataManager.Instance.SqlDbNames[0] + " ("
+                                 + string.Join(",", DataManager.SqlColumnNames)
+                                 + ") values ('{" + string.Join("}','{", nums) + "}')";
+            string sql = String.Format(
                 formatString,
-                mCount,
                 this.boardid,
                 this.devid,
                 this.time,
-                mTemp,
-                mHumidity);
+                this.temp,
+                this.humidity);
+
+            SQLiteCommand command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
             command = new SQLiteCommand(sql, DataManager.Instance.DbConnection);
             command.ExecuteNonQuery();
         }
 
         public bool Save()
         {
-            try {
+            try
+            {
                 UnsafeSave();
             }
             catch

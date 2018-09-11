@@ -50,7 +50,7 @@ namespace Serial
 
         private SerialPort port;
 
-        public void OpenPort(
+        public bool OpenPort(
             string portName,
             int baudRate,
             int dataBits = 8,
@@ -71,8 +71,9 @@ namespace Serial
             }
             catch
             {
-
+                return false;
             }
+            return true;
         }
 
         public void ClosePort()

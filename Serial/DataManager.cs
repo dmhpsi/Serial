@@ -36,7 +36,7 @@ namespace Serial
         public readonly string errorLogFileName = "ErrorLog.txt";
         public static readonly string[] SqlColumnNames = { "boardid", "devid", "timestamp", "temp", "humidity" };
         static readonly string[] SqlColumnTypes = { "varchar(20)", "varchar(20)", "bigint", "float", "float" };
-        public readonly string[] SqlDbNames = { "raw", "avg1min", "avg1hour"};
+        public readonly string[] SqlDbNames = { "raw", "avg1min", "avg1hour" };
         static readonly int SqlColumnCount = SqlColumnNames.Length;
 
         public enum DbSelect
@@ -215,8 +215,8 @@ namespace Serial
 
             SQLiteCommand command = new SQLiteCommand(sql, DbConnection);
             command.ExecuteNonQuery();
-            sql = string.Format("delete from {0} where timestamp <= {1}", 
-                SqlDbNames[(int)from], 
+            sql = string.Format("delete from {0} where timestamp <= {1}",
+                SqlDbNames[(int)from],
                 untilTimestamp - outTime);
             command = new SQLiteCommand(sql, DbConnection);
             command.ExecuteNonQuery();
@@ -243,9 +243,46 @@ namespace Serial
 
         public Record[] GetDataByLastTime(string boardid, string devid, long seconds)
         {
+            long curentSeconds = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
+            string sql = string.Format(@"select min(timestamp) as mts
+                    from {0}  
+                    where boardid='{1}' and devid='{2}' and timestamp >= {3}",
+                    SqlDbNames[0],
+                    boardid,
+                    devid,
+                    curentSeconds - seconds);
+            SQLiteCommand command = new SQLiteCommand(sql, DbConnection);
+            SQLiteDataReader reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                try
+                {
+                    seconds = curentSeconds - long.Parse(reader["mts"].ToString());
+                }
+                catch
+                {
+
+                }
+            }
+
             int timeAverageRange;
             string SqlDbName;
-             if (seconds <= 21600)   // 6 hours
+            if (seconds <= 120)   // 2 minutes
+            {
+                SqlDbName = SqlDbNames[0];
+                timeAverageRange = 5;
+            }
+            else if (seconds <= 1200)   // 20 minutes
+            {
+                SqlDbName = SqlDbNames[1];
+                timeAverageRange = 60;
+            }
+            else if (seconds <= 3600)   // 1 hours
+            {
+                SqlDbName = SqlDbNames[1];
+                timeAverageRange = 300;
+            }
+            else if (seconds <= 21600)   // 6 hours
             {
                 SqlDbName = SqlDbNames[1];
                 timeAverageRange = 600;
@@ -272,7 +309,7 @@ namespace Serial
             }
             long secondsCount = DateTime.Now.Ticks / TimeSpan.TicksPerSecond - seconds;
             DataSet dataSet = new DataSet();
-            string sql = String.Format(
+            sql = String.Format(
                 @"select 
                     min(boardid) as boardid, min(devid) as devid,
                     avg(temp) as temp, avg(humidity) as humidity,

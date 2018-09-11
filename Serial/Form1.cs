@@ -316,13 +316,21 @@ namespace Serial
             {
                 ComManager.Instance.DataIncoming += WriteToBoard;
                 ComManager.Instance.Disconnected += PortDisconnected;
-                ComManager.Instance.OpenPort(portName: portName, baudRate: baudRate);
-                this.BtnOpen.BackgroundImage = Properties.Resources.exit;
-                toolTip.SetToolTip(BtnOpen, "Stop And Close");
-                this.connectedCom = portName;
-                this.connectedBaudRate = baudRate;
-                timer.Start();
-                UpdateCharts();
+                if (ComManager.Instance.OpenPort(portName: portName, baudRate: baudRate))
+                {
+                    this.BtnOpen.BackgroundImage = Properties.Resources.exit;
+                    toolTip.SetToolTip(BtnOpen, "Stop And Close");
+                    this.connectedCom = portName;
+                    this.connectedBaudRate = baudRate;
+                    timer.Start();
+                    UpdateCharts();
+                    this.isOpen = true;
+                }
+                else
+                {
+                    this.isOpen = false;
+                    MessageBox.Show(this, "Comport Open Failed!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             else
             {
@@ -335,8 +343,8 @@ namespace Serial
                 this.connectedBaudRate = 0;
                 timer.Stop();
                 WriteDataTask(null, null);
+                this.isOpen = false;
             }
-            this.isOpen = open;
             LabelStatus.Text = String.Format("Port: {0} Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
         }
 

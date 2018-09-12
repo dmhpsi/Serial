@@ -725,6 +725,7 @@
             this.MinimumSize = new System.Drawing.Size(840, 480);
             this.Name = "Form1";
             this.Text = "Env Monitor";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.layout_MainContainer.ResumeLayout(false);
             this.layout_MainContainer.PerformLayout();
             this.tabControl1.ResumeLayout(false);

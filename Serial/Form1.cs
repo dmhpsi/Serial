@@ -71,6 +71,7 @@ namespace Serial
             this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
             this.ComboIntervalList.SelectedIndexChanged += delegate {
                 this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
+                UpdateCharts();
             };
 
             this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
@@ -233,10 +234,10 @@ namespace Serial
                 {
                     //chart.ChartAreas[0].AxisX.Minimum = MinX;
                     //chart.ChartAreas[0].AxisX.Maximum = MaxX;
-                    double dY = (MaxY - MinY) / 10.0 + 0.05;
+                    double dY = (MaxY - MinY) / 20.0;
                     chart.ChartAreas[0].AxisY.Minimum = Floor(MinY - dY - 0.01, 0.1);
                     chart.ChartAreas[0].AxisY.Maximum = Ceiling(MaxY + dY + 0.01, 0.1);
-                    dY = (MaxY2 - MinY2) / 10.0 + 0.05;
+                    dY = (MaxY2 - MinY2) / 20.0;
                     chart.ChartAreas[0].AxisY2.Minimum = Floor(MinY2 - dY - 0.01, 0.1);
                     chart.ChartAreas[0].AxisY2.Maximum = Ceiling(MaxY2 + dY + 0.01, 0.1);
                 }

@@ -244,10 +244,22 @@ namespace Serial
         public Record[] GetDataByLastTime(string boardid, string devid, long seconds)
         {
             long curentSeconds = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
-            string sql = string.Format(@"select min(timestamp) as mts
+            string sql = string.Format(@"select min(mts1) as mts
+                    from (
+                    select min(timestamp) as mts1
                     from {0}  
-                    where boardid='{1}' and devid='{2}' and timestamp >= {3}",
+                    where boardid='{3}' and devid='{4}' and timestamp >= {5}
+                    union
+                    select min(timestamp) as mts1
+                    from {1}  
+                    where boardid='{3}' and devid='{4}' and timestamp >= {5}
+                    union
+                    select min(timestamp) as mts1
+                    from {2}  
+                    where boardid='{3}' and devid='{4}' and timestamp >= {5})",
                     SqlDbNames[0],
+                    SqlDbNames[1],
+                    SqlDbNames[2],
                     boardid,
                     devid,
                     curentSeconds - seconds);
@@ -258,6 +270,7 @@ namespace Serial
                 try
                 {
                     seconds = curentSeconds - long.Parse(reader["mts"].ToString());
+                    Console.WriteLine(reader["mts"]);
                 }
                 catch
                 {
@@ -307,7 +320,7 @@ namespace Serial
                 SqlDbName = SqlDbNames[2];
                 timeAverageRange = 86400;
             }
-            long secondsCount = DateTime.Now.Ticks / TimeSpan.TicksPerSecond - seconds;
+            long secondsCount = curentSeconds - seconds;
             DataSet dataSet = new DataSet();
             sql = String.Format(
                 @"select 

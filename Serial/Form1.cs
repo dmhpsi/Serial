@@ -297,7 +297,7 @@ namespace Serial
                         DataManager.Instance.Log(receivedText.Substring(5));
                     }
                 }
-                else
+                else if (receivedText.StartsWith("Error: "))
                 {
                     Record record = new Record();
                     if (record.Input(receivedText))
@@ -330,7 +330,8 @@ namespace Serial
                 else
                 {
                     this.isOpen = false;
-                    MessageBox.Show(this, "Comport Open Failed!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    //MessageBox.Show(this, "Comport Open Failed!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    CenterMessage.Show("Warning", "Comport Open Failed!");
                 }
             }
             else

@@ -1,6 +1,6 @@
 ﻿namespace Serial
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,8 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
@@ -42,14 +40,16 @@
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            this.layout_MainContainer = new System.Windows.Forms.TableLayoutPanel();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            this.layoutMainContainer = new System.Windows.Forms.TableLayoutPanel();
+            this.BtnOpenSend = new System.Windows.Forms.Button();
             this.TxtConsole = new System.Windows.Forms.TextBox();
             this.ComboComList = new System.Windows.Forms.ComboBox();
             this.BtnRefresh = new System.Windows.Forms.Button();
             this.BtnOpen = new System.Windows.Forms.Button();
             this.LabelStatus = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.ComboIntervalList = new System.Windows.Forms.ComboBox();
+            this.LabelInterval = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
@@ -78,8 +78,7 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.dataManagerBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.layout_MainContainer.SuspendLayout();
+            this.layoutMainContainer.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
@@ -97,48 +96,61 @@
             this.tabPage3.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataManagerBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // layout_MainContainer
             // 
-            this.layout_MainContainer.ColumnCount = 5;
-            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
-            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
-            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.layout_MainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.layout_MainContainer.Controls.Add(this.TxtConsole, 0, 0);
-            this.layout_MainContainer.Controls.Add(this.ComboComList, 0, 1);
-            this.layout_MainContainer.Controls.Add(this.BtnRefresh, 1, 1);
-            this.layout_MainContainer.Controls.Add(this.BtnOpen, 2, 1);
-            this.layout_MainContainer.Controls.Add(this.LabelStatus, 0, 2);
-            this.layout_MainContainer.Controls.Add(this.label2, 3, 1);
-            this.layout_MainContainer.Controls.Add(this.ComboIntervalList, 4, 1);
-            this.layout_MainContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.layout_MainContainer.Location = new System.Drawing.Point(10, 29);
-            this.layout_MainContainer.Name = "layout_MainContainer";
-            this.layout_MainContainer.RowCount = 3;
-            this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.layout_MainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.layout_MainContainer.Size = new System.Drawing.Size(416, 197);
-            this.layout_MainContainer.TabIndex = 0;
+            this.layoutMainContainer.ColumnCount = 6;
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.layoutMainContainer.Controls.Add(this.BtnOpenSend, 3, 1);
+            this.layoutMainContainer.Controls.Add(this.TxtConsole, 0, 0);
+            this.layoutMainContainer.Controls.Add(this.ComboComList, 0, 1);
+            this.layoutMainContainer.Controls.Add(this.BtnRefresh, 1, 1);
+            this.layoutMainContainer.Controls.Add(this.BtnOpen, 2, 1);
+            this.layoutMainContainer.Controls.Add(this.LabelStatus, 0, 2);
+            this.layoutMainContainer.Controls.Add(this.ComboIntervalList, 5, 1);
+            this.layoutMainContainer.Controls.Add(this.LabelInterval, 4, 1);
+            this.layoutMainContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.layoutMainContainer.Location = new System.Drawing.Point(10, 29);
+            this.layoutMainContainer.Name = "layout_MainContainer";
+            this.layoutMainContainer.RowCount = 3;
+            this.layoutMainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.layoutMainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutMainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.layoutMainContainer.Size = new System.Drawing.Size(416, 197);
+            this.layoutMainContainer.TabIndex = 0;
+            // 
+            // BtnOpenSend
+            // 
+            this.BtnOpenSend.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnOpenSend.FlatAppearance.BorderSize = 0;
+            this.BtnOpenSend.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnOpenSend.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
+            this.BtnOpenSend.Location = new System.Drawing.Point(187, 122);
+            this.BtnOpenSend.Name = "BtnOpenSend";
+            this.BtnOpenSend.Size = new System.Drawing.Size(36, 33);
+            this.BtnOpenSend.TabIndex = 10;
+            this.BtnOpenSend.Tag = "Record";
+            this.BtnOpenSend.Text = "";
+            this.BtnOpenSend.Click += new System.EventHandler(this.BtnOpenSend_Click);
             // 
             // TxtConsole
             // 
-            this.layout_MainContainer.SetColumnSpan(this.TxtConsole, 10);
+            this.layoutMainContainer.SetColumnSpan(this.TxtConsole, 10);
             this.TxtConsole.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TxtConsole.HideSelection = false;
             this.TxtConsole.Location = new System.Drawing.Point(3, 3);
-            this.TxtConsole.MaxLength = 65536;
             this.TxtConsole.Multiline = true;
             this.TxtConsole.Name = "TxtConsole";
             this.TxtConsole.ReadOnly = true;
             this.TxtConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.TxtConsole.Size = new System.Drawing.Size(410, 113);
             this.TxtConsole.TabIndex = 6;
-            this.TxtConsole.WordWrap = false;
             // 
             // ComboComList
             // 
@@ -154,39 +166,39 @@
             // 
             // BtnRefresh
             // 
-            this.BtnRefresh.BackgroundImage = global::Serial.Properties.Resources.refresh;
-            this.BtnRefresh.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BtnRefresh.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.BtnRefresh.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnRefresh.FlatAppearance.BorderSize = 0;
-            this.BtnRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnRefresh.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnRefresh.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnRefresh.Location = new System.Drawing.Point(103, 122);
             this.BtnRefresh.Name = "BtnRefresh";
             this.BtnRefresh.Size = new System.Drawing.Size(36, 33);
             this.BtnRefresh.TabIndex = 2;
             this.BtnRefresh.Tag = "Refresh";
+            this.BtnRefresh.Text = "";
             this.BtnRefresh.UseVisualStyleBackColor = true;
             this.BtnRefresh.Click += new System.EventHandler(this.RefreshClick);
             // 
             // BtnOpen
             // 
-            this.BtnOpen.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("BtnOpen.BackgroundImage")));
-            this.BtnOpen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnOpen.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnOpen.FlatAppearance.BorderSize = 0;
-            this.BtnOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnOpen.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnOpen.Location = new System.Drawing.Point(145, 122);
             this.BtnOpen.Name = "BtnOpen";
             this.BtnOpen.Size = new System.Drawing.Size(36, 33);
             this.BtnOpen.TabIndex = 3;
             this.BtnOpen.Tag = "Record";
-            this.BtnOpen.UseVisualStyleBackColor = true;
+            this.BtnOpen.Text = "";
             this.BtnOpen.Click += new System.EventHandler(this.BtnOpenClick);
             // 
             // LabelStatus
             // 
             this.LabelStatus.BackColor = System.Drawing.Color.WhiteSmoke;
             this.LabelStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.layout_MainContainer.SetColumnSpan(this.LabelStatus, 10);
+            this.layoutMainContainer.SetColumnSpan(this.LabelStatus, 10);
             this.LabelStatus.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LabelStatus.Location = new System.Drawing.Point(5, 163);
             this.LabelStatus.Margin = new System.Windows.Forms.Padding(5);
@@ -195,25 +207,28 @@
             this.LabelStatus.TabIndex = 7;
             this.LabelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(187, 119);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(99, 39);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Interval";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
             // ComboIntervalList
             // 
             this.ComboIntervalList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ComboIntervalList.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ComboIntervalList.FormattingEnabled = true;
             this.ComboIntervalList.Location = new System.Drawing.Point(292, 122);
             this.ComboIntervalList.Name = "ComboIntervalList";
-            this.ComboIntervalList.Size = new System.Drawing.Size(121, 28);
+            this.ComboIntervalList.Size = new System.Drawing.Size(121, 33);
             this.ComboIntervalList.TabIndex = 9;
+            // 
+            // label2
+            // 
+            this.LabelInterval.AutoSize = true;
+            this.LabelInterval.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LabelInterval.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LabelInterval.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
+            this.LabelInterval.Location = new System.Drawing.Point(229, 119);
+            this.LabelInterval.Name = "label2";
+            this.LabelInterval.Size = new System.Drawing.Size(57, 39);
+            this.LabelInterval.TabIndex = 8;
+            this.LabelInterval.Text = "";
+            this.LabelInterval.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // tabControl1
             // 
@@ -449,7 +464,7 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.layout_MainContainer);
+            this.groupBox1.Controls.Add(this.layoutMainContainer);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
@@ -521,53 +536,57 @@
             // 
             // BtnLastPage
             // 
-            this.BtnLastPage.BackgroundImage = global::Serial.Properties.Resources.last;
-            this.BtnLastPage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnLastPage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnLastPage.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnLastPage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnLastPage.Location = new System.Drawing.Point(326, 3);
             this.BtnLastPage.Name = "BtnLastPage";
             this.BtnLastPage.Size = new System.Drawing.Size(35, 35);
             this.BtnLastPage.TabIndex = 4;
             this.BtnLastPage.Tag = "Last Page";
+            this.BtnLastPage.Text = "";
             this.BtnLastPage.UseVisualStyleBackColor = true;
             this.BtnLastPage.Click += new System.EventHandler(this.BtnLastPageClick);
             // 
             // BtnNextPage
             // 
-            this.BtnNextPage.BackgroundImage = global::Serial.Properties.Resources.next;
-            this.BtnNextPage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnNextPage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnNextPage.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnNextPage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnNextPage.Location = new System.Drawing.Point(285, 3);
             this.BtnNextPage.Name = "BtnNextPage";
             this.BtnNextPage.Size = new System.Drawing.Size(35, 35);
             this.BtnNextPage.TabIndex = 3;
             this.BtnNextPage.Tag = "Next Page";
+            this.BtnNextPage.Text = "";
             this.BtnNextPage.UseVisualStyleBackColor = true;
             this.BtnNextPage.Click += new System.EventHandler(this.BtnNextPageClick);
             // 
             // BtnPreviousPage
             // 
-            this.BtnPreviousPage.BackgroundImage = global::Serial.Properties.Resources.prev;
-            this.BtnPreviousPage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnPreviousPage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnPreviousPage.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnPreviousPage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnPreviousPage.Location = new System.Drawing.Point(44, 3);
             this.BtnPreviousPage.Name = "BtnPreviousPage";
             this.BtnPreviousPage.Size = new System.Drawing.Size(35, 35);
             this.BtnPreviousPage.TabIndex = 1;
             this.BtnPreviousPage.Tag = "Previous Page";
+            this.BtnPreviousPage.Text = "";
             this.BtnPreviousPage.UseVisualStyleBackColor = true;
             this.BtnPreviousPage.Click += new System.EventHandler(this.BtnPreviousPageClick);
             // 
             // BtnFirstPage
             // 
-            this.BtnFirstPage.BackgroundImage = global::Serial.Properties.Resources.first;
-            this.BtnFirstPage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnFirstPage.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.BtnFirstPage.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnFirstPage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnFirstPage.Location = new System.Drawing.Point(3, 3);
             this.BtnFirstPage.Name = "BtnFirstPage";
             this.BtnFirstPage.Size = new System.Drawing.Size(35, 35);
             this.BtnFirstPage.TabIndex = 0;
             this.BtnFirstPage.Tag = "First Page";
+            this.BtnFirstPage.Text = "";
             this.BtnFirstPage.UseVisualStyleBackColor = true;
             this.BtnFirstPage.Click += new System.EventHandler(this.BtnFirstPageClick);
             // 
@@ -611,15 +630,15 @@
             // 
             // BtnReadDb
             // 
-            this.BtnReadDb.BackgroundImage = global::Serial.Properties.Resources.Table;
-            this.BtnReadDb.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnReadDb.Dock = System.Windows.Forms.DockStyle.Left;
-            this.BtnReadDb.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnReadDb.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnReadDb.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnReadDb.Location = new System.Drawing.Point(497, 3);
             this.BtnReadDb.Name = "BtnReadDb";
             this.BtnReadDb.Size = new System.Drawing.Size(33, 33);
             this.BtnReadDb.TabIndex = 1;
             this.BtnReadDb.Tag = "Read The Database";
+            this.BtnReadDb.Text = "";
             this.BtnReadDb.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.BtnReadDb.Click += new System.EventHandler(this.BtnReadDbClick);
             // 
@@ -635,29 +654,30 @@
             // 
             // BtnGetBoardsList
             // 
-            this.BtnGetBoardsList.BackgroundImage = global::Serial.Properties.Resources.refresh;
             this.BtnGetBoardsList.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnGetBoardsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.BtnGetBoardsList.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnGetBoardsList.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnGetBoardsList.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnGetBoardsList.Location = new System.Drawing.Point(209, 3);
             this.BtnGetBoardsList.Name = "BtnGetBoardsList";
             this.BtnGetBoardsList.Size = new System.Drawing.Size(35, 33);
             this.BtnGetBoardsList.TabIndex = 5;
             this.BtnGetBoardsList.Tag = "Refresh Boards List";
+            this.BtnGetBoardsList.Text = "";
             this.BtnGetBoardsList.UseVisualStyleBackColor = true;
             this.BtnGetBoardsList.Click += new System.EventHandler(this.BtnGetBoardsListClick);
             // 
             // BtnGetDevidsList
             // 
-            this.BtnGetDevidsList.BackgroundImage = global::Serial.Properties.Resources.refresh;
-            this.BtnGetDevidsList.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.BtnGetDevidsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.BtnGetDevidsList.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnGetDevidsList.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BtnGetDevidsList.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.BtnGetDevidsList.Location = new System.Drawing.Point(456, 3);
             this.BtnGetDevidsList.Name = "BtnGetDevidsList";
             this.BtnGetDevidsList.Size = new System.Drawing.Size(35, 33);
             this.BtnGetDevidsList.TabIndex = 6;
             this.BtnGetDevidsList.Tag = "Refresh Devices List";
+            this.BtnGetDevidsList.Text = "";
             this.BtnGetDevidsList.UseVisualStyleBackColor = true;
             this.BtnGetDevidsList.Click += new System.EventHandler(this.BtnGetDevidsListClick);
             // 
@@ -702,7 +722,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackgroundImage = global::Serial.Properties.Resources.Icon;
+            this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
             this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
@@ -710,10 +730,6 @@
             this.pictureBox1.Size = new System.Drawing.Size(885, 307);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
-            // 
-            // dataManagerBindingSource
-            // 
-            this.dataManagerBindingSource.DataSource = typeof(Serial.DataManager);
             // 
             // Form1
             // 
@@ -726,8 +742,8 @@
             this.Name = "Form1";
             this.Text = "Env Monitor";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.layout_MainContainer.ResumeLayout(false);
-            this.layout_MainContainer.PerformLayout();
+            this.layoutMainContainer.ResumeLayout(false);
+            this.layoutMainContainer.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tableLayoutPanel4.ResumeLayout(false);
@@ -747,14 +763,13 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataManagerBindingSource)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.TableLayoutPanel layout_MainContainer;
+        private System.Windows.Forms.TableLayoutPanel layoutMainContainer;
         private System.Windows.Forms.ComboBox ComboComList;
         private System.Windows.Forms.Button BtnRefresh;
         private System.Windows.Forms.Button BtnOpen;
@@ -786,11 +801,11 @@
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.BindingSource dataManagerBindingSource;
+        private System.Windows.Forms.Label LabelInterval;
         private System.Windows.Forms.ComboBox ComboIntervalList;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.Button BtnOpenSend;
     }
 }
 

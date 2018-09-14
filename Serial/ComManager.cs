@@ -27,7 +27,7 @@ namespace Serial
         {
             try
             {
-                port.Write("a");
+                port.Write("\n");
             }
             catch
             {
@@ -79,12 +79,11 @@ namespace Serial
         public void ClosePort()
         {
             if (port.IsOpen)
-            { 
+            {
                 timer.Stop();
                 port.Close();
             }
         }
-
         public string ReceiveData()
         {
             string result = "";
@@ -104,6 +103,16 @@ namespace Serial
                 {
                     return result;
                 }
+            }
+        }
+        public void WriteLine(string data)
+        {
+            try
+            {
+                port.WriteLine(data);
+            }
+            catch
+            {
             }
         }
     }

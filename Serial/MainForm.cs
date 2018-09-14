@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
+using System.Drawing.Text;
+using System.IO;
 using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Serial
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         bool isOpen;
         string connectedCom;
@@ -33,10 +37,11 @@ namespace Serial
         };
         private ComboObject selectedInterval;
         private long lastMigrate1hour = 0, lastMigrate1min = 0;
-
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
+            DataManager.Instance.InitCustomFont(Properties.Resources.fa_solid_900);
+            SetCustomFont();
             DataManager.Instance.Connect();
             recordsList = new List<Record>();
             timer = new System.Windows.Forms.Timer
@@ -77,8 +82,6 @@ namespace Serial
             this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart1.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart1.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
-            //this.chart1.Series[0].IsXValueIndexed = true;
-            //this.chart1.Series[1].IsXValueIndexed = true;
             this.chart2.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart2.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart2.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
@@ -86,7 +89,21 @@ namespace Serial
             this.chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
         }
-
+        private void SetCustomFont()
+        {
+            PrivateFontCollection fontCollection = DataManager.Instance.fontCollection;
+            BtnRefresh.Font = new Font(fontCollection.Families[0], BtnRefresh.Font.Size);
+            BtnReadDb.Font = new Font(fontCollection.Families[0], BtnReadDb.Font.Size);
+            BtnOpen.Font = new Font(fontCollection.Families[0], BtnOpen.Font.Size);
+            BtnGetBoardsList.Font = new Font(fontCollection.Families[0], BtnGetBoardsList.Font.Size);
+            BtnGetDevidsList.Font = new Font(fontCollection.Families[0], BtnGetDevidsList.Font.Size);
+            BtnFirstPage.Font = new Font(fontCollection.Families[0], BtnFirstPage.Font.Size);
+            BtnPreviousPage.Font = new Font(fontCollection.Families[0], BtnPreviousPage.Font.Size);
+            BtnNextPage.Font = new Font(fontCollection.Families[0], BtnNextPage.Font.Size);
+            BtnLastPage.Font = new Font(fontCollection.Families[0], BtnLastPage.Font.Size);
+            BtnOpenSend.Font = new Font(fontCollection.Families[0], BtnOpenSend.Font.Size);
+            LabelInterval.Font = new Font(fontCollection.Families[0], LabelInterval.Font.Size);
+        }
         private void RefreshClick(object sender, EventArgs e)
         {
             this.BtnOpen.Enabled = false;
@@ -299,14 +316,14 @@ namespace Serial
                 }
                 else if (receivedText.StartsWith("Error: "))
                 {
+                    DataManager.Instance.ErrorLog(receivedText);
+                }
+                else
+                {
                     Record record = new Record();
                     if (record.Input(receivedText))
                     {
                         recordsList.Add(record);
-                    }
-                    else
-                    {
-                        DataManager.Instance.ErrorLog(receivedText);
                     }
                 }
             }
@@ -319,8 +336,10 @@ namespace Serial
                 ComManager.Instance.Disconnected += PortDisconnected;
                 if (ComManager.Instance.OpenPort(portName: portName, baudRate: baudRate))
                 {
-                    this.BtnOpen.BackgroundImage = Properties.Resources.exit;
+                    this.BtnOpen.Text = "\uf00d";  // Time
+                    this.BtnOpen.ForeColor = Color.FromArgb(((int)(((byte)(118)))), ((int)(((byte)(23)))), ((int)(((byte)(28)))));
                     toolTip.SetToolTip(BtnOpen, "Stop And Close");
+                    BtnOpenSend.Enabled = true;
                     this.connectedCom = portName;
                     this.connectedBaudRate = baudRate;
                     timer.Start();
@@ -339,8 +358,10 @@ namespace Serial
                 ComManager.Instance.DataIncoming -= WriteToBoard;
                 ComManager.Instance.Disconnected -= PortDisconnected;
                 ComManager.Instance.ClosePort();
-                this.BtnOpen.BackgroundImage = Properties.Resources.play;
+                this.BtnOpen.Text = "\uf111";    // Circle
+                this.BtnOpen.ForeColor = Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
                 toolTip.SetToolTip(BtnOpen, "Open And Start Monitoring");
+                BtnOpenSend.Enabled = false;
                 this.connectedCom = "";
                 this.connectedBaudRate = 0;
                 timer.Stop();
@@ -425,6 +446,12 @@ namespace Serial
             Thread thread = new Thread(DataTask);
             thread.Start();
         }
+
+        private void BtnOpenSend_Click(object sender, EventArgs e)
+        {
+            SendingForm.Show();
+        }
+
         private void DataTask()
         {
             if (recordsList.Count <= 0)
@@ -454,7 +481,6 @@ namespace Serial
                 lastMigrate1hour = standardTime;
             }
         }
-
         private void BtnGetBoardsListClick(object sender, EventArgs e)
         {
             object selected = BoardsList.SelectedItem;

@@ -1,4 +1,6 @@
-﻿namespace Serial
+﻿using System.Drawing;
+
+namespace Serial
 {
     class ComboObject
     {
@@ -19,7 +21,7 @@
     static class Constants
     {
         public const int saveInterval = 5; //seconds
-        //public const long dataInterval = 600; //seconds
-        //public const long historyInterval = 7200; //seconds
+        public const string ColorPrimary = "#174276";
+        public const string ColorPrimaryInvert = "#76171c";
     }
 }

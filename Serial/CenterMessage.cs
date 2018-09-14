@@ -85,7 +85,7 @@ namespace Serial
             // 
             // panel1
             // 
-            this.panel1.BackgroundImage = global::Serial.Properties.Resources._5a81af7d9123fa7bcc9b0793_1_;
+            this.panel1.BackgroundImage = global::Serial.Properties.Resources.warning;
             this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.panel1.Location = new System.Drawing.Point(15, 15);
             this.panel1.Margin = new System.Windows.Forms.Padding(15);

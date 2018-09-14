@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SQLite;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,6 +34,7 @@ namespace Serial
         }
 
         public SQLiteConnection DbConnection;
+        public PrivateFontCollection fontCollection;
         public readonly string logFileName = "Log.txt";
         public readonly string errorLogFileName = "ErrorLog.txt";
         public static readonly string[] SqlColumnNames = { "boardid", "devid", "timestamp", "temp", "humidity" };
@@ -246,17 +249,17 @@ namespace Serial
             long curentSeconds = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
             string sql = string.Format(@"select min(mts1) as mts
                     from (
-                    select min(timestamp) as mts1
-                    from {0}  
-                    where boardid='{3}' and devid='{4}' and timestamp >= {5}
-                    union
-                    select min(timestamp) as mts1
-                    from {1}  
-                    where boardid='{3}' and devid='{4}' and timestamp >= {5}
-                    union
-                    select min(timestamp) as mts1
-                    from {2}  
-                    where boardid='{3}' and devid='{4}' and timestamp >= {5})",
+                        select min(timestamp) as mts1
+                        from {0}  
+                        where boardid='{3}' and devid='{4}' and timestamp >= {5}
+                        union
+                        select min(timestamp) as mts1
+                        from {1}  
+                        where boardid='{3}' and devid='{4}' and timestamp >= {5}
+                        union
+                        select min(timestamp) as mts1
+                        from {2}  
+                        where boardid='{3}' and devid='{4}' and timestamp >= {5})",
                     SqlDbNames[0],
                     SqlDbNames[1],
                     SqlDbNames[2],
@@ -269,12 +272,13 @@ namespace Serial
             {
                 try
                 {
-                    seconds = curentSeconds - long.Parse(reader["mts"].ToString());
+                    Console.Write("mts");
                     Console.WriteLine(reader["mts"]);
+                    seconds = curentSeconds - long.Parse(reader["mts"].ToString());
                 }
                 catch
                 {
-
+                    Console.WriteLine("Wrong mts");
                 }
             }
 
@@ -347,6 +351,34 @@ namespace Serial
             };
             //return RecordsReduction(records).ToArray();
             return records.ToArray();
+        }
+
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
+        public void InitCustomFont(byte[] resourceFont)
+        {
+            fontCollection = new PrivateFontCollection();
+            Stream fontStream = new MemoryStream(resourceFont);
+            int fontLength = resourceFont.Length;
+            System.IntPtr data = Marshal.AllocCoTaskMem(fontLength);
+            //create a buffer to read in to
+            Byte[] fontData = new Byte[fontStream.Length];
+            //fetch the font program from the resource
+            fontStream.Read(fontData, 0, fontLength);
+            //copy the bytes to the unsafe memory block
+            Marshal.Copy(fontData, 0, data, fontLength);
+
+            // We HAVE to do this to register the font to the system (Weird .NET bug !)
+            uint cFonts = 0;
+            AddFontMemResourceEx(data, (uint)fontData.Length, IntPtr.Zero, ref cFonts);
+
+            //pass the font to the font collection
+            fontCollection.AddMemoryFont(data, fontLength);
+            //close the resource stream
+            fontStream.Close();
+            //free the unsafe memory
+            Marshal.FreeCoTaskMem(data);
         }
     }
 }

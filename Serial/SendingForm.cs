@@ -66,7 +66,7 @@ namespace Serial
         {
             string txt = GetText().Trim();
             if (txt.Length > 0)
-                ComManager.Instance.WriteLine(txt);
+                ComManager.Instance.WriteLine(txt.ToLower());
         }
     }
 

@@ -37,6 +37,20 @@ namespace Serial
         };
         private ComboObject selectedInterval;
         private long lastMigrate1hour = 0, lastMigrate1min = 0;
+        public enum EXECUTION_STATE : uint
+        {
+            ES_AWAYMODE_REQUIRED = 0x00000040,
+            ES_CONTINUOUS = 0x80000000,
+            ES_DISPLAY_REQUIRED = 0x00000002,
+            ES_SYSTEM_REQUIRED = 0x00000001
+
+        }
+        internal class NativeMethods
+        {
+            [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+        }
+
         public MainForm()
         {
             InitializeComponent();
@@ -74,7 +88,8 @@ namespace Serial
             this.ComboIntervalList.Items.AddRange(intervalObjects);
             this.ComboIntervalList.SelectedIndex = 1;
             this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
-            this.ComboIntervalList.SelectedIndexChanged += delegate {
+            this.ComboIntervalList.SelectedIndexChanged += delegate
+            {
                 this.selectedInterval = (ComboObject)ComboIntervalList.SelectedItem;
                 UpdateCharts();
             };
@@ -88,7 +103,17 @@ namespace Serial
             this.chart3.ChartAreas[0].AxisX.LabelStyle.Format = dateTimeFormatPattern;
             this.chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
+
+            NativeMethods.SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+
         }
+
+        ~MainForm()
+        {
+            timer.Stop();
+            NativeMethods.SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
+        }
+
         private void SetCustomFont()
         {
             PrivateFontCollection fontCollection = DataManager.Instance.fontCollection;
@@ -598,16 +623,16 @@ namespace Serial
         {
             //try
             //{
-                ClearMinMax();
-                long historyInterval = long.Parse(selectedInterval.value.ToString());
+            ClearMinMax();
+            long historyInterval = long.Parse(selectedInterval.value.ToString());
 
-                Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", historyInterval);
-                SetChartData(chart1, drawRecords);
-                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", historyInterval);
-                SetChartData(chart2, drawRecords);
-                drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", historyInterval);
-                SetChartData(chart3, drawRecords);
-                SetMinMax();
+            Record[] drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "1", historyInterval);
+            SetChartData(chart1, drawRecords);
+            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "2", historyInterval);
+            SetChartData(chart2, drawRecords);
+            drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", historyInterval);
+            SetChartData(chart3, drawRecords);
+            SetMinMax();
             //}
             //catch
             //{

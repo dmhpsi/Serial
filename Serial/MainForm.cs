@@ -104,7 +104,7 @@ namespace Serial
             this.chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0.00";
             this.chart3.ChartAreas[0].AxisY2.LabelStyle.Format = "0.00";
 
-            NativeMethods.SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+            NativeMethods.SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED);
 
         }
 
@@ -285,6 +285,37 @@ namespace Serial
                 }
             }
         }
+        delegate void SetMinMaxIndividualCallback();
+        private void SetMinMaxIndividual()
+        {
+            if (this.TxtConsole.InvokeRequired)
+            {
+                SetMinMaxIndividualCallback d = new SetMinMaxIndividualCallback(SetMinMaxIndividual);
+                try
+                {
+                    this.Invoke(d, new object[] { });
+                }
+                catch
+                {
+                }
+            }
+            else
+            {
+                foreach (Chart chart in chartsList)
+                {
+                    //chart.ChartAreas[0].AxisX.Minimum = MinX;
+                    //chart.ChartAreas[0].AxisX.Maximum = MaxX;
+                    FindMinMax(chart.Series[0].Points, out double minX, out double maxX, out double minY, out double maxY);
+                    double dY = (maxY - minY) / 20.0;
+                    chart.ChartAreas[0].AxisY.Minimum = Floor(minY - dY - 0.01, 0.1);
+                    chart.ChartAreas[0].AxisY.Maximum = Ceiling(maxY + dY + 0.01, 0.1);
+                    FindMinMax(chart.Series[1].Points, out minX, out maxX, out double minY2, out double maxY2);
+                    dY = (maxY2 - minY2) / 20.0;
+                    chart.ChartAreas[0].AxisY2.Minimum = Floor(minY2 - dY - 0.01, 0.1);
+                    chart.ChartAreas[0].AxisY2.Maximum = Ceiling(maxY2 + dY + 0.01, 0.1);
+                }
+            }
+        }
         delegate void SetChartDataCallback(Chart chart, Record[] records);
         private void SetChartData(Chart chart, Record[] records)
         {
@@ -308,19 +339,19 @@ namespace Serial
                         chart.Series[0].Points.AddXY(dateTime.ToOADate(), record.temp);
                         chart.Series[1].Points.AddXY(dateTime.ToOADate(), record.humidity);
                     }
-                    FindMinMax(chart.Series[0].Points,
-                        out double minX, out double maxX, out double minY, out double maxY);
-                    //MinX = MinX > minX ? minX : MinX;
-                    //MaxX = MaxX < maxX ? maxX : MaxX;
-                    MinY = MinY > minY ? minY : MinY;
-                    MaxY = MaxY < maxY ? maxY : MaxY;
+                    //FindMinMax(chart.Series[0].Points,
+                    //    out double minX, out double maxX, out double minY, out double maxY);
+                    ////MinX = MinX > minX ? minX : MinX;
+                    ////MaxX = MaxX < maxX ? maxX : MaxX;
+                    //MinY = MinY > minY ? minY : MinY;
+                    //MaxY = MaxY < maxY ? maxY : MaxY;
 
-                    FindMinMax(chart.Series[1].Points,
-                        out minX, out maxX, out minY, out maxY);
-                    //MinX = MinX > minX ? minX : MinX;
-                    //MaxX = MaxX < maxX ? maxX : MaxX;
-                    MinY2 = MinY2 > minY ? minY : MinY2;
-                    MaxY2 = MaxY2 < maxY ? maxY : MaxY2;
+                    //FindMinMax(chart.Series[1].Points,
+                    //    out minX, out maxX, out minY, out maxY);
+                    ////MinX = MinX > minX ? minX : MinX;
+                    ////MaxX = MaxX < maxX ? maxX : MaxX;
+                    //MinY2 = MinY2 > minY ? minY : MinY2;
+                    //MaxY2 = MaxY2 < maxY ? maxY : MaxY2;
                 }
             }
         }
@@ -632,7 +663,7 @@ namespace Serial
             SetChartData(chart2, drawRecords);
             drawRecords = DataManager.Instance.GetDataByLastTime("mega25", "3", historyInterval);
             SetChartData(chart3, drawRecords);
-            SetMinMax();
+            SetMinMaxIndividual();
             //}
             //catch
             //{

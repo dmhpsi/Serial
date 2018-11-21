@@ -98,7 +98,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
-            // layout_MainContainer
+            // layoutMainContainer
             // 
             this.layoutMainContainer.ColumnCount = 6;
             this.layoutMainContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
@@ -117,7 +117,7 @@
             this.layoutMainContainer.Controls.Add(this.LabelInterval, 4, 1);
             this.layoutMainContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.layoutMainContainer.Location = new System.Drawing.Point(10, 29);
-            this.layoutMainContainer.Name = "layout_MainContainer";
+            this.layoutMainContainer.Name = "layoutMainContainer";
             this.layoutMainContainer.RowCount = 3;
             this.layoutMainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.layoutMainContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -217,14 +217,14 @@
             this.ComboIntervalList.Size = new System.Drawing.Size(121, 33);
             this.ComboIntervalList.TabIndex = 9;
             // 
-            // label2
+            // LabelInterval
             // 
             this.LabelInterval.AutoSize = true;
             this.LabelInterval.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LabelInterval.Font = new System.Drawing.Font("Font Awesome 5 Free", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LabelInterval.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(23)))), ((int)(((byte)(66)))), ((int)(((byte)(118)))));
             this.LabelInterval.Location = new System.Drawing.Point(229, 119);
-            this.LabelInterval.Name = "label2";
+            this.LabelInterval.Name = "LabelInterval";
             this.LabelInterval.Size = new System.Drawing.Size(57, 39);
             this.LabelInterval.TabIndex = 8;
             this.LabelInterval.Text = "";
@@ -293,9 +293,11 @@
             chartArea1.AxisX.LabelStyle.Angle = -30;
             chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
             chartArea1.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Silver;
+            chartArea1.AxisY.IsStartedFromZero = false;
             chartArea1.AxisY.LabelStyle.ForeColor = System.Drawing.Color.Red;
             chartArea1.AxisY.LineColor = System.Drawing.Color.Red;
             chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.Silver;
+            chartArea1.AxisY2.IsStartedFromZero = false;
             chartArea1.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.Blue;
             chartArea1.AxisY2.LineColor = System.Drawing.Color.Blue;
             chartArea1.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -333,7 +335,7 @@
             this.chart3.Series.Add(series1);
             this.chart3.Series.Add(series2);
             this.chart3.Size = new System.Drawing.Size(431, 211);
-            this.chart3.TabIndex = 1;
+            this.chart3.TabIndex = 2;
             this.chart3.Text = "chart3";
             // 
             // groupBox3
@@ -356,9 +358,11 @@
             chartArea2.AxisX.LabelStyle.Angle = -30;
             chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
             chartArea2.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Silver;
+            chartArea2.AxisY.IsStartedFromZero = false;
             chartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.Red;
             chartArea2.AxisY.LineColor = System.Drawing.Color.Red;
             chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.Silver;
+            chartArea2.AxisY2.IsStartedFromZero = false;
             chartArea2.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.Blue;
             chartArea2.AxisY2.LineColor = System.Drawing.Color.Blue;
             chartArea2.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -396,7 +400,7 @@
             this.chart2.Series.Add(series3);
             this.chart2.Series.Add(series4);
             this.chart2.Size = new System.Drawing.Size(430, 211);
-            this.chart2.TabIndex = 0;
+            this.chart2.TabIndex = 2;
             this.chart2.Text = "chart2";
             // 
             // groupBox2
@@ -419,9 +423,11 @@
             chartArea3.AxisX.LabelStyle.Angle = -30;
             chartArea3.AxisX.MajorGrid.LineColor = System.Drawing.Color.Silver;
             chartArea3.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Silver;
+            chartArea3.AxisY.IsStartedFromZero = false;
             chartArea3.AxisY.LabelStyle.ForeColor = System.Drawing.Color.Red;
             chartArea3.AxisY.LineColor = System.Drawing.Color.Red;
             chartArea3.AxisY.MajorGrid.LineColor = System.Drawing.Color.Silver;
+            chartArea3.AxisY2.IsStartedFromZero = false;
             chartArea3.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.Blue;
             chartArea3.AxisY2.LineColor = System.Drawing.Color.Blue;
             chartArea3.AxisY2.MajorGrid.LineColor = System.Drawing.Color.Silver;
@@ -731,7 +737,7 @@
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -739,7 +745,7 @@
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(840, 480);
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.Text = "Env Monitor";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.layoutMainContainer.ResumeLayout(false);
@@ -800,12 +806,12 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private System.Windows.Forms.Label LabelInterval;
         private System.Windows.Forms.ComboBox ComboIntervalList;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Button BtnOpenSend;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
     }
 }
 

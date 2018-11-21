@@ -9,9 +9,9 @@ using System.Windows.Forms;
 
 namespace Serial
 {
-    public partial class SedingFromDrawer : Form
+    public partial class SendingFromDrawer : Form
     {
-        public SedingFromDrawer()
+        public SendingFromDrawer()
         {
             InitializeComponent();
             this.KeyDown += SendingFormKeyDown;
@@ -75,7 +75,7 @@ namespace Serial
         public static void Show()
         {
             // using construct ensures the resources are freed when form is closed
-            using (var form = new SedingFromDrawer())
+            using (var form = new SendingFromDrawer())
             {
                 form.ShowDialog();
             }

@@ -1,6 +1,6 @@
 ﻿namespace Serial
 {
-    partial class SedingFromDrawer
+    partial class SendingFromDrawer
     {
         /// <summary>
         /// Required designer variable.

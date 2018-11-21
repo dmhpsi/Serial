@@ -16,9 +16,18 @@ namespace Serial
     {
         private DataManager()
         {
-            if (!File.Exists("db.sqlite"))
+            dataDirectory = Path.Combine(Environment.GetFolderPath(
+                Environment.SpecialFolder.MyDoc‌​uments), "CSLab", "EnvMon");
+            if (!Directory.Exists(dataDirectory))
             {
-                SQLiteConnection.CreateFile("db.sqlite");
+                Directory.CreateDirectory(dataDirectory);
+            }
+            logFileName = Path.Combine(dataDirectory, "Log.txt");
+            errorLogFileName = Path.Combine(dataDirectory, "ErrorLog.txt");
+            dbPath = Path.Combine(dataDirectory, "db.sqlite");
+            if (!File.Exists(dbPath))
+            {
+                SQLiteConnection.CreateFile(dbPath);
             }
         }
 
@@ -35,12 +44,14 @@ namespace Serial
 
         public SQLiteConnection DbConnection;
         public PrivateFontCollection fontCollection;
-        public readonly string logFileName = "Log.txt";
-        public readonly string errorLogFileName = "ErrorLog.txt";
+        public readonly string logFileName;
+        public readonly string errorLogFileName;
         public static readonly string[] SqlColumnNames = { "boardid", "devid", "timestamp", "temp", "humidity" };
         static readonly string[] SqlColumnTypes = { "varchar(20)", "varchar(20)", "bigint", "float", "float" };
         public readonly string[] SqlDbNames = { "raw", "avg1min", "avg1hour" };
         static readonly int SqlColumnCount = SqlColumnNames.Length;
+        private readonly string dataDirectory;
+        private readonly string dbPath;
 
         public enum DbSelect
         {
@@ -50,7 +61,7 @@ namespace Serial
         public void Connect()
         {
             Console.WriteLine("Connected");
-            DbConnection = new SQLiteConnection("Data Source=db.sqlite;Version=3;");
+            DbConnection = new SQLiteConnection("Data Source=" + dbPath + ";Version=3;");
             DbConnection.Open();
             string[] varStr = new string[SqlColumnCount];
             for (int i = 0; i < SqlColumnCount; i++)

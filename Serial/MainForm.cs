@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.IO.Ports;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -50,10 +51,22 @@ namespace Serial
             [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
         }
+        
+        public static string SendResponse(System.Net.HttpListenerRequest request)
+        {
+            Record[] drawRecords = DataManager.Instance.GetLastData();
+            string ret = "";
+            foreach (Record rec in drawRecords)
+            {
+                ret += rec.ToString() + '\n';
+            }
+            return ret;
+        }
 
         public MainForm()
         {
             InitializeComponent();
+
             DataManager.Instance.InitCustomFont(Properties.Resources.fa_solid_900);
             SetCustomFont();
             DataManager.Instance.Connect();
@@ -406,7 +419,7 @@ namespace Serial
                 {
                     this.isOpen = false;
                     //MessageBox.Show(this, "Comport Open Failed!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    CenterMessage.Show("Warning", "Comport Open Failed!");
+                    CenterMessage.Show("Warning", "Com Port Open Failed!");
                 }
             }
             else

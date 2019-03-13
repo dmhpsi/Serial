@@ -255,6 +255,25 @@ namespace Serial
             return 0;
         }
 
+        public Record[] GetLastData()
+        {
+            string sql = string.Format(@"select boardid, devid, temp, humidity, max(timestamp) as maxts
+                    from raw 
+                    where devid in (1,2,3) 
+                    group by devid");
+            DataSet dataSet = new DataSet();
+            SQLiteDataAdapter sqlDataAdapter = new SQLiteDataAdapter(sql, DbConnection);
+            sqlDataAdapter.Fill(dataSet);
+            List<Record> records = new List<Record>();
+            foreach (DataRow row in dataSet.Tables[0].Rows)
+            {
+                Record record = new Record();
+                if (record.Input(row["boardid"], row["maxts"], row["devid"], row["temp"], row["humidity"]))
+                    records.Add(record);
+            };
+            return records.ToArray();
+        }
+
         public Record[] GetDataByLastTime(string boardid, string devid, long seconds)
         {
             long curentSeconds = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;

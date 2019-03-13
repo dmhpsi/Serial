@@ -183,5 +183,11 @@ namespace Serial
                 return reference.CompareTo(y.reference);
             }
         }
+
+        public override string ToString()
+        {
+            DateTime datetime = new DateTime(time * TimeSpan.TicksPerSecond);
+            return string.Format("[{0}], boardid:{1}, devid:{2}, temperature:{3}, humidity:{4}", datetime.ToString("dd/MM/yyyy HH:mm:ss"), boardid, devid, temp, humidity);
+        }
     }
 }

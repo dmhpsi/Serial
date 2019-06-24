@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Serial
 {
+    // Serial port handler
     public sealed class ComManager
     {
         System.Windows.Forms.Timer timer;
@@ -18,18 +19,15 @@ namespace Serial
             port = new SerialPort();
             timer = new System.Windows.Forms.Timer
             {
-                Interval = 1000
+                Interval = 100
             };
-            timer.Tick += CheckAlive;
         }
 
         private void CheckAlive(object sender, EventArgs e)
         {
-            try
-            {
-                port.Write("\n");
-            }
-            catch
+            string[] ports = SerialPort.GetPortNames();
+            int pos = Array.IndexOf(ports, port.PortName);
+            if (pos == -1)
             {
                 ClosePort();
                 timer.Stop();
@@ -81,7 +79,14 @@ namespace Serial
             if (port.IsOpen)
             {
                 timer.Stop();
-                port.Close();
+                try
+                {
+                    port.Close();
+                }
+                catch
+                {
+
+                }
             }
         }
         public string ReceiveData()

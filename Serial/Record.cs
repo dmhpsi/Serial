@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Serial
 {
+    // record data wrapper for ease of use
     public class Record
     {
         public const int numParam = 4;
@@ -187,7 +188,19 @@ namespace Serial
         public override string ToString()
         {
             DateTime datetime = new DateTime(time * TimeSpan.TicksPerSecond);
-            return string.Format("[{0}], boardid:{1}, devid:{2}, temperature:{3}, humidity:{4}", datetime.ToString("dd/MM/yyyy HH:mm:ss"), boardid, devid, temp, humidity);
+            return string.Format("[{0}] boardid:{1}, devid:{2}, temperature:{3}, humidity:{4}", datetime.ToString("dd/MM/yyyy HH:mm:ss"), boardid, devid, temp, humidity);
+        }
+        public string ToJSON()
+        {
+            DateTime datetime = new DateTime(time * TimeSpan.TicksPerSecond);
+            return string.Format(
+                "{{\"time\":\"{0}\",\"boardid\":\"{1}\",\"devid\":\"{2}\",\"temperature\":{3},\"humidity\":{4},\"timestamp\":{5}}}", 
+                datetime.ToString("dd/MM/yyyy HH:mm:ss"), 
+                boardid, 
+                devid, 
+                temp, 
+                humidity,
+                time);
         }
     }
 }

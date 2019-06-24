@@ -10,6 +10,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Text;
+using System.Net;
+using WebSocketSharp.Server;
+using WebSocketSharp;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using System.Configuration;
 
 namespace Serial
 {
@@ -26,6 +34,7 @@ namespace Serial
         private double MinX, MaxX, MinY, MaxY, MinY2, MaxY2;
         private List<Chart> chartsList;
         private string dateTimeFormatPattern = "dd/MM/yyyy HH:mm";
+        private HttpServer server;
         private ComboObject[] intervalObjects = {
             new ComboObject("1 hour", 3600),
             new ComboObject("2 hours", 7200),
@@ -51,21 +60,47 @@ namespace Serial
             [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
         }
-        
-        public static string SendResponse(System.Net.HttpListenerRequest request)
-        {
-            Record[] drawRecords = DataManager.Instance.GetLastData();
-            string ret = "";
-            foreach (Record rec in drawRecords)
-            {
-                ret += rec.ToString() + '\n';
-            }
-            return ret;
-        }
 
         public MainForm()
         {
             InitializeComponent();
+
+            // Init HttpServer
+            // https://github.com/sta/websocket-sharp
+            server = new HttpServer(80, true);
+                       
+            server.OnGet += (sender, e) => {
+                var req = e.Request;
+                var res = e.Response;
+
+                var path = req.RawUrl;
+                byte[] contents;
+                if (path == "/data" || path == "/data/")
+                {
+                    res.ContentType = "application/json";
+                    Record[] records = DataManager.Instance.GetLastData();
+                    List<string> ljsons = new List<string>();
+                    string ret = "{\"data\":[";
+                    foreach (Record record in records)
+                    {
+                        ljsons.Add(record.ToJSON());
+                    }
+                    ret += String.Join(",",ljsons) + "]}";
+                    contents = Encoding.ASCII.GetBytes(ret);
+                }
+                else
+                {
+                    contents = Encoding.ASCII.GetBytes("<html><h1>404 Not found</h1></html>");
+                    res.ContentType = "text/html";
+                    res.ContentEncoding = Encoding.UTF8;
+                }
+                res.WriteContent(contents);
+            };
+            server.Start();
+            for (int ixx = 0; ixx < 10; ixx++)
+            {
+                ixx += 0;
+            }
 
             DataManager.Instance.InitCustomFont(Properties.Resources.fa_solid_900);
             SetCustomFont();
@@ -96,6 +131,7 @@ namespace Serial
             toolTip.SetToolTip(BtnPreviousPage, "Previous Page");
             toolTip.SetToolTip(BtnReadDb, "Read The DataBase");
             toolTip.SetToolTip(BtnRefresh, "Get COMs list");
+            toolTip.SetToolTip(BtnNetInfo, "Network Infomation");
             ComSet(false);
             this.ComboIntervalList.Items.Clear();
             this.ComboIntervalList.Items.AddRange(intervalObjects);
@@ -124,6 +160,7 @@ namespace Serial
         ~MainForm()
         {
             timer.Stop();
+            server.Stop();
             NativeMethods.SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
@@ -141,7 +178,10 @@ namespace Serial
             BtnLastPage.Font = new Font(fontCollection.Families[0], BtnLastPage.Font.Size);
             BtnOpenSend.Font = new Font(fontCollection.Families[0], BtnOpenSend.Font.Size);
             LabelInterval.Font = new Font(fontCollection.Families[0], LabelInterval.Font.Size);
+            BtnNetInfo.Font = new Font(fontCollection.Families[0], BtnNetInfo.Font.Size);
         }
+
+        // Refresh Serial port list dropdown
         private void RefreshClick(object sender, EventArgs e)
         {
             this.BtnOpen.Enabled = false;
@@ -169,6 +209,8 @@ namespace Serial
         {
             return (Math.Round(x / spacing) * spacing);
         }
+
+        #region Append text to console window
         delegate void AppendTextCallback(string text);
         private void AppendText(string text)
         {
@@ -198,6 +240,8 @@ namespace Serial
                 }
             }
         }
+        #endregion
+
         #region Add Data To Chart
         //private void PerformAdd(Chart chart, Record record)
         //{
@@ -240,6 +284,8 @@ namespace Serial
         //    }
         //}
         #endregion
+
+        #region Set charts min max programmatically for better display
         private void ClearMinMax()
         {
             MinX = 9999.0;
@@ -329,6 +375,8 @@ namespace Serial
                 }
             }
         }
+        #endregion
+
         delegate void SetChartDataCallback(Chart chart, Record[] records);
         private void SetChartData(Chart chart, Record[] records)
         {
@@ -397,6 +445,8 @@ namespace Serial
                 }
             }
         }
+
+        // Set serial port status and change record button's icon
         private void ComSet(bool open, string portName = "", int baudRate = 0)
         {
             if (open)
@@ -449,6 +499,8 @@ namespace Serial
         {
             ComSet(!this.isOpen, this.ComboComList.SelectedItem.ToString(), 9600);
         }
+
+        // Database view tab pagination generator
         private void Paging(string boardid, string devid, int page, int pageSize)
         {
             if (boardid != null)
@@ -489,6 +541,7 @@ namespace Serial
                 BtnNextPage.Enabled = (page < pageCount);
             }
         }
+
         private void BtnReadDbClick(object sender, EventArgs e)
         {
             dataGridView1.AutoGenerateColumns = true;
@@ -519,6 +572,49 @@ namespace Serial
         private void BtnOpenSend_Click(object sender, EventArgs e)
         {
             SendingForm.Show();
+        }
+
+        private void LabelStatus_Click(object sender, EventArgs e)
+        {
+            if (LabelStatus.Text.StartsWith("P"))
+            {
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                string ips = "";
+                foreach (var ip in host.AddressList)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ips += ip.ToString() + "  ";
+                    }
+                }
+                LabelStatus.Text = "IP: " + ips;
+            }
+            else
+            {
+                LabelStatus.Text = String.Format("Port: {0} Baud Rate: {1}", this.connectedCom, this.connectedBaudRate);
+            }
+        }
+
+        private void BtnNetInfo_Click(object sender, EventArgs e)
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            string msg = "Status: ";
+            if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                msg += "Conneted\nIP: ";
+                foreach (var ip in host.AddressList)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        msg += ip.ToString() + "\n";
+                    }
+                }
+            }
+            else
+            {
+                msg += "Disconnected";
+            }
+            MessageBox.Show(msg, "Network Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void DataTask()

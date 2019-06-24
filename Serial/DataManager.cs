@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace Serial
 {
+    // Data managing class
+    // Provide access to sqlite database
     public sealed class DataManager
     {
         private DataManager()
@@ -82,6 +84,7 @@ namespace Serial
             Console.WriteLine("Disconnected");
         }
 
+        // Get dataset to display on database view tab
         public DataSet GetDataSource(string boardid, string devid, int page, int pageSize)
         {
             DataSet dataSet = new DataSet();
@@ -102,6 +105,8 @@ namespace Serial
             sqlDataAdapter.Fill(dataSet);
             return dataSet;
         }
+
+        // Get number of records by board id and device id
         public int GetRowsCount(string boardid, string devid)
         {
             string commandString = "select count(*) from " + SqlDbNames[0];
@@ -127,6 +132,8 @@ namespace Serial
             }
             return 0;
         }
+
+        // Log provided text
         public void Log(string text)
         {
             if (!File.Exists(logFileName))
@@ -138,6 +145,8 @@ namespace Serial
                 sw.WriteLine(DateTime.Now.ToString("[dd/MM/yy_HH:mm:ss] ") + text.Trim());
             }
         }
+
+        // Log provided error
         public void ErrorLog(string text)
         {
             if (!File.Exists(errorLogFileName))
@@ -149,6 +158,8 @@ namespace Serial
                 sw.WriteLine(DateTime.Now.ToString("[dd/MM/yy_HH:mm:ss] ") + text.Trim());
             }
         }
+
+        // Find all the board name in database
         public string[] GetBoardsList()
         {
             DataSet dataSet = new DataSet();
@@ -162,6 +173,8 @@ namespace Serial
             }
             return boards.ToArray();
         }
+
+        // Find all device id in database
         public string[] GetDevidsList(string boardId)
         {
             DataSet dataSet = new DataSet();
@@ -176,36 +189,7 @@ namespace Serial
             return devs.ToArray();
         }
 
-        public List<Record> RecordsReduction(List<Record> src)
-        {
-            int severity = src.Count / 20;
-            if (severity < 1)
-                return new List<Record>(src.ToArray());
-            List<Record> res = new List<Record>();
-            for (int i = 1; i < src.Count; i += severity)
-            {
-                //---------------------------------------------------------------avg
-                var start = i; // (i - severity > 0 ? i - severity : 0);
-                var end = (i + severity < src.Count ? i + severity : src.Count);
-
-                float sumTemp = 0, sumHumidity = 0;
-
-                for (int j = start; j < end; j++)
-                {
-                    sumTemp += src[j].temp;
-                    sumHumidity += src[j].humidity;
-                }
-
-                var avgTemp = sumTemp / (end - start);
-                var avgHumidity = sumHumidity / (end - start);
-                //---------------------------------------------------------------
-                Record record = new Record();
-                record.Input(src[i].boardid, src[i].GetTime(), src[i].devid, avgTemp, avgHumidity);
-                res.Add(record);
-            }
-            return res;
-        }
-
+        // Migrate old data from lower level table to a higher one
         public void Migrate(DbSelect from, DbSelect to, long untilTimestamp)
         {
             int range = 60;
@@ -255,6 +239,7 @@ namespace Serial
             return 0;
         }
 
+        // Get latest record in database
         public Record[] GetLastData()
         {
             string sql = string.Format(@"select boardid, devid, temp, humidity, max(timestamp) as maxts
@@ -274,6 +259,7 @@ namespace Serial
             return records.ToArray();
         }
 
+        // Get records which were added in porvided seconds
         public Record[] GetDataByLastTime(string boardid, string devid, long seconds)
         {
             long curentSeconds = DateTime.Now.Ticks / TimeSpan.TicksPerSecond;
@@ -302,8 +288,6 @@ namespace Serial
             {
                 try
                 {
-                    Console.Write("mts");
-                    Console.WriteLine(reader["mts"]);
                     seconds = curentSeconds - long.Parse(reader["mts"].ToString());
                 }
                 catch
@@ -383,7 +367,7 @@ namespace Serial
             return records.ToArray();
         }
 
-
+        // Load custom font for icons
         [DllImport("gdi32.dll")]
         private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [In] ref uint pcFonts);
         public void InitCustomFont(byte[] resourceFont)
